@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <script src="/main.js"></script>
+        <link rel="stylesheet" type="text/css" href="/main.css" />
+    </head>
+
+    <body onload="onload()">
+        <!--navbar-->
+        <div class="navbar">
+            <p><a href="/info">Info</a></p>
+            <p><a id="userLink">User</a></p>
+        </div>
+
+        <div class="container">
+            <!--main body-->
+            <div class="canvasContainer">
+                <canvas id="glCanvas" class="canvas"></canvas>
+            </div>
+            
+            <div>
+                <button>Play</button>
+                <button>Pause</button>
+            </div>
+
+            <div class="buttonContainer">
+                <div class="inputContainer">
+                    xLength: <input type="number" id="xLength" value="5" class="numInput">
+                    yLength: <input type="number" id="yLength" value="5" class="numInput">
+                    zLength: <input type="number" id="zLength" value="5" class="numInput">
+                    resolution: <input type="number" id="resolution" value="1" class="numInput">
+                    reflections: <input type="number" id="reflections" value="3" class="numInput">
+                    <button onclick="updateParameters()">Update</button>
+                </div>
+
+                <div class="inputContainer" id="fileInputDiv">
+                    <input type="file" id="fileInput" name="fileInput">
+                    <button onclick="upload()">Upload</button>
+                </div>
+
+                <div class="inputContainer" id="downloadBtnDiv">
+                </div>
+            </div>
+
+            <div id="loginArea" class="loginArea">
+                Username: <input type="text" id="usernameInput" maxlength="8" value="">
+                <Button onclick="login()">Login</Button>
+                <button onclick="newTicket()">New Ticket</button>
+            </div>
+        </div>
+    </body>
+</html>

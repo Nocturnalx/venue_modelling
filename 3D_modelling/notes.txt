@@ -1,0 +1,44 @@
+MINIMUM REQUIREMENTS
+
+3d room
+	floor walls + ceiling
+	absorption coeficient
+	
+only 2 point speakers
+	full 20-20k hz from each point
+	can be placed anywhere in 3D the space
+
+
+what is the calculation?
+	at any point in the room how different is the frequency response from the output?
+	and/or any other audio "quality" calculations like RT60, C80, D50, DRR...
+	which speaker setup gives the best sound? this could be somthing like wihch setup has the flatest distribution of sound qualities
+optimisations?
+	decreasing resolution of points that calculations are performed on
+	decreasing resolution of rays or propogation waves from each speaker
+	only checking output on a single 2D plane at a given height
+	only checking output of a smaller 3D section 
+	
+visualising the output
+	3D heat map which could be viewed as slices or some type of semi transparent web/bubble-like scructure
+
+
+report 1
+first report could be on what the map will look like and what factors will go into making it like an audibility index or somthing like that for each discrete point
+find waves per reflections
+complete differences formula
+
+report 2
+complete get times function
+
+
+lecture 1 
+absent
+
+lecture 2
+questions for tutor
+ray traced audio vs point propogation or other audio simulation techniques
+methods of judgment same as before but 3D or add in other room qualities DRR RT60 clarity
+
+lecture 3
+look at references managers like zotero

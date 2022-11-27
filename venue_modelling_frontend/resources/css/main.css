@@ -1,0 +1,142 @@
+body{
+    background-color: #eaecf0 !important;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 1%;
+    margin-right: 1%;
+    font-family: Arial,Helvetica,sans-serif;
+}
+
+/*default text font and color*/
+body p{
+    color: #343434;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body a{
+    color: #343434;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body a:hover{
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline !important;
+}
+
+body small{
+    color: #343434;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/*navbar*/
+.navbar{
+    overflow: hidden;
+    background-color: #5c5c5c;
+    top: 0; /* Position the navbar at the top of the page */
+    width: 100%; /*Full width */
+    justify-content: left !important;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Links inside the navbar */
+.navbar a {
+    float: left;
+    display: block;
+    color: #fff !important;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change background on mouse-over */
+.navbar a:hover {
+    cursor: pointer;
+    color: inherit;
+}
+
+small a{
+    color: #585858 !important;
+    padding-right: 10;
+}
+
+/*button style*/
+button {
+    color: #fff !important;
+    text-decoration: none;
+    background-color: #9b9b9b;
+    padding: 10px;
+    border-radius: 5px;
+    display: inline-block;
+    border: none;
+    transition: all 0.4s ease 0s;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.buttonContainer{
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 1%;
+    width: 96%; /*Full width */
+    justify-content: left !important;
+}
+
+.container{
+    margin: 1%;
+}
+
+.loginArea{
+    position: absolute;
+	top: 20vh;
+	left: 35vw;
+
+	background-color: #5c5c5c;
+	padding: 20;
+	border-radius: 5px;
+}
+
+.canvas{
+    margin-top: 2%;
+    height: 70%;
+    width: 80%;
+}
+
+.inputContainer{
+    margin-right: 10px;
+    display: inline-block;
+}
+
+.numInput{
+    width: 40px;
+}
+
+@media screen and (max-width: 900px) {
+    .navbar{
+        justify-content: space-between !important;
+    }
+
+    /*remember vw for % of viewwidth and rem for text size*/
+}
+
+
+/*possibly un-needed*/
+
+.textContainer {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+
+.centeredText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
