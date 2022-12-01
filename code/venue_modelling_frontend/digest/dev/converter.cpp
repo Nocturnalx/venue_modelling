@@ -1,4 +1,4 @@
-static void main(string args[]){
+void main(char* args[]){
 	//while loop checking sql for length
 		//if length > 1 execute func() 
 }
