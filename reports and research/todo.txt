@@ -1,8 +1,0 @@
-create ticket cleanup program
-client check for file
-
-main cpp program
-	json file output layout or equivalent
-
-client 3D visualisation from file
-	(needs the file layout creating before)
