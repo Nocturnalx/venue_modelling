@@ -47,6 +47,7 @@ void initArr(){
     //freqArray = whatever;
 }
 
+//useless - for testing - outputs random numbers
 float* getTimes(int x, int y, int z){
     float* timeArray;
     timeArray = new float[waves];
