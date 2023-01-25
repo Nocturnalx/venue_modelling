@@ -1,0 +1,6 @@
+overview
+
+calulate room d50 value with white noise using single point
+
+for each point in a room get a buffer containing the sum of the converging left and right channels taking absorption into account
+

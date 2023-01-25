@@ -1,0 +1,85 @@
+float* source_L[]
+float* source_R[]
+float* source_mono[]
+
+for (i = 0; i < buffer_L.length){
+	source_mono[i] = (source_L[i] + source_R[i]) / 2
+}
+
+int T //samples since start
+int N //samples in buffer
+
+length
+width 
+heigh
+
+points = length*width*hieght
+
+struct point{
+	int x;
+	int y;
+	int z;
+}
+
+point* pointArr[points]
+float* indexArr[points]
+
+int i = 0;
+
+for (int x = 0; x < xLength; x++){
+	for (int y = 0; y < yLength; y++){
+        	for (int z = 0; z < zLength; z++){
+			pointArr[i].x = x
+			pointArr[i].y = y
+			pointArr[i].z = z
+
+                	i++;
+        	}
+	}
+}
+
+source_L = {x,y,z}
+source_R = {x,y,z}
+
+float* absorptionCoeffs[6] = {a,a,a,a,a,a} //top,bottom,left,right,front,back
+
+
+float function get_D50(){
+	float out
+
+	return out
+}
+
+float D50 = get_D50()
+
+//delays are in samples
+float function get_index(tau_L, tau_R, dist_L, dist_R){
+	float* buffer_L[]
+	float* buffer_R[]
+	float* result[]
+	float out
+
+	for (i = 0; i < N; i++){
+		buffer_L[i] = source_L[T-tau_L+i];
+		buffer_L[i] = buffer_L[i] * 1/(4*pi*dist_L)
+
+		buffer_R[i] = source_R[T-tau_R+i];
+		buffer_R[i] = buffer_R[i] * 1/(4*pi*dist_R)
+
+		
+		//ignoring wall absorption for now			
+	}
+
+	for(i = 0; i < buffer_L.length(); i++){
+		result[i] = (buffer_L[i] + buffer_R[i]) / 2
+	}
+
+	out = corr_norm(result, source_mono) * D50
+}
+
+
+foreach point in pointArr{
+	
+}
+
+//1 dimesion
