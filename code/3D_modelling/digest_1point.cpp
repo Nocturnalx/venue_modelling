@@ -14,12 +14,12 @@ FILE * infile = fopen("testfile.wav","rb");		    // Open wave file in read mode
 FILE * outfile = fopen("Output.wav","wb");		    // Create output ( wave format) file in write mode
 
 int BUFFSIZE;
-int sampleRate = 41000; //could be changed but for now sample rate stays hard coded for 41000
+int sampleRate = 44100; //could be changed but for now sample rate stays hard coded for 41000
 int nb;	// variable storing number of bytes returned
 
-short int * buff;
-short int * leftBuff;
-short int * rightBuff;
+//13230000 is 5 mins @ 44,100 so hard cap on song length at 5 mins
+short int leftBuff[13230000];
+short int rightBuff[13230000];
 
 //for file read
 char readingData = 0;
@@ -139,100 +139,101 @@ float get_dist(int x, int y, int z, point speaker){
 }
 
 
-void process(short int * leftBuff_p, short int * rightBuff_p){
+// void process(short int * leftBuff_p, short int * rightBuff_p){
 
-    //short int monoBuff_src[BUFFSIZE/2];
-    //for BUFFSIZE/2 combine left and right to mono without delay
+//     //short int monoBuff_src[BUFFSIZE/2];
+//     //for BUFFSIZE/2 combine left and right to mono without delay
 
-    cout << "processing\n";
+//     cout << "processing\n";
 
-    short int comb_leftBuff[BUFFSIZE];
-    short int comb_rightBuff[BUFFSIZE];
+//     short int comb_leftBuff[BUFFSIZE];
+//     short int comb_rightBuff[BUFFSIZE];
 
-    short int monoBuff[BUFFSIZE/2];
+//     short int monoBuff[BUFFSIZE/2];
 
-    cout << "allocated proc buffs\n";
+//     cout << "allocated proc buffs\n";
 
-    //for testing, to reverse use nested x,y,z loops for co-ord vals
-    int x = xLength/2;
-    int y = yLength/2;
-    int z = (zLength/4) * 3;
+//     //for testing, to reverse use nested x,y,z loops for co-ord vals
+//     int x = xLength/2;
+//     int y = yLength/2;
+//     int z = (zLength/4) * 3;
 
-    //populate room buffer arrays
-    for (int r = 0; r < rooms; r++){
+//     //populate room buffer arrays
+//     for (int r = 0; r < rooms; r++){
         
-        cout << "room: " << r << endl;
+//         cout << "room: " << r << endl;
 
-        int room_x = x + roomArr[r].xOffset;
-        int room_y = y + roomArr[r].yOffset;
-        int room_z = z + roomArr[r].zOffset;
+//         int room_x = x + roomArr[r].xOffset;
+//         int room_y = y + roomArr[r].yOffset;
+//         int room_z = z + roomArr[r].zOffset;
 
-        //dist to left
-        float dist_L = get_dist(room_x, room_y, room_z, speaker_L);
-        //dist to right
-        float dist_R = get_dist(room_x, room_y, room_z, speaker_R);
+//         //dist to left
+//         float dist_L = get_dist(room_x, room_y, room_z, speaker_L);
+//         //dist to right
+//         float dist_R = get_dist(room_x, room_y, room_z, speaker_R);
 
-        //time delays in sec
-        int delay_L = (dist_L/343);
-        int delay_R = (dist_R/343);
+//         //time delays in sec
+//         int delay_L = (dist_L/343);
+//         int delay_R = (dist_R/343);
 
-        //time delays in samples
-        int delay_L_samp = delay_L * sampleRate;
-        int delay_R_samp = delay_R * sampleRate;
+//         //time delays in samples
+//         int delay_L_samp = delay_L * sampleRate;
+//         int delay_R_samp = delay_R * sampleRate;
 
-        //for each smaple in each buff
-        for (int i = BUFFSIZE/2; i >= 0; i++){
-            //apply delays L&R, if index - delay is negative then that index should be 0
-            if (i >= delay_L_samp){
-                leftBuff_p[i] = leftBuff_p[i - delay_L_samp];
-            } else {
-                leftBuff_p[i] = 0;
-            }
+//         //for each smaple in each buff
+//         for (int i = BUFFSIZE/2; i >= 0; i++){
+//             //apply delays L&R, if index - delay is negative then that index should be 0
+//             if (i >= delay_L_samp){
+//                 leftBuff_p[i] = leftBuff_p[i - delay_L_samp];
+//             } else {
+//                 leftBuff_p[i] = 0;
+//             }
 
-            if (i >= delay_L_samp){
-                rightBuff_p[i] = rightBuff_p[i - delay_R_samp];
-            } else {
-                rightBuff_p[i] = 0;
-            }
+//             if (i >= delay_L_samp){
+//                 rightBuff_p[i] = rightBuff_p[i - delay_R_samp];
+//             } else {
+//                 rightBuff_p[i] = 0;
+//             }
 
-            //times by invers square for distance loss 
-            leftBuff_p[i] = leftBuff_p[i] * (4*pi*pow(dist_L, 2));
-            rightBuff_p[i] = rightBuff_p[i] * (4*pi*pow(dist_R, 2));
+//             //times by invers square for distance loss 
+//             leftBuff_p[i] = leftBuff_p[i] * (4*pi*pow(dist_L, 2));
+//             rightBuff_p[i] = rightBuff_p[i] * (4*pi*pow(dist_R, 2));
 
-            //times by abs
-            //roomArr[r].totalAbs
+//             //times by abs
+//             //roomArr[r].totalAbs
 
-            //add delayed buffs to buff array - divide by rooms to get average when summing
-            comb_leftBuff[i] += leftBuff_p[i] / rooms;
-            comb_rightBuff[i] += rightBuff_p[i] / rooms;
-        }
+//             //add delayed buffs to buff array - divide by rooms to get average when summing
+//             comb_leftBuff[i] += leftBuff_p[i] / rooms;
+//             comb_rightBuff[i] += rightBuff_p[i] / rooms;
+//         }
 
-        cout << "gathered stereo buffs\n";
+//         cout << "gathered stereo buffs\n";
 
-        //here wav file could be reconstructed
-        short int out[BUFFSIZE];
-        for (int i = 0; i < BUFFSIZE/2; i++){
-                out[i*2] = comb_leftBuff[i];
-                out[(i*2) + 1] = comb_rightBuff[i];
-        }
-        fwrite(out,1,BUFFSIZE,outfile);
+//         //here wav file could be reconstructed
+//         short int out[BUFFSIZE];
+//         for (int i = 0; i < BUFFSIZE/2; i++){
+//                 out[i*2] = comb_leftBuff[i];
+//                 out[(i*2) + 1] = comb_rightBuff[i];
+//         }
+//         fwrite(out,1,BUFFSIZE,outfile);
 
-        //combine channels to mono
-        for (int i = 0; i < BUFFSIZE/2; i++){
-            monoBuff[i] = (comb_leftBuff[i] / 2) + (comb_rightBuff[i] / 2);
-        }
+//         //combine channels to mono
+//         for (int i = 0; i < BUFFSIZE/2; i++){
+//             monoBuff[i] = (comb_leftBuff[i] / 2) + (comb_rightBuff[i] / 2);
+//         }
 
-        cout << "combined stereo buffs to mono\n";
+//         cout << "combined stereo buffs to mono\n";
 
-        //split monobuff into 3 sec chunks and do cross corr on it vs combined source 
-    }
-}
+//         //split monobuff into 3 sec chunks and do cross corr on it vs combined source 
+//     }
+// }
 
 int main()
 {
     init();
 
-    int frameBuffSize = 4096;					                // 524288 is ~ 3 seconds at 41,000
+    int frameBuffSize = 66150;
+    short int buff[66150];
 	int count = 0;						                // For counting number of frames in wave file.
 	header_p meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
     int nb_tot = 0; //total bytes read
@@ -276,41 +277,34 @@ int main()
         fread(data_size, 1, sizeof(int), infile);
         BUFFSIZE = data_size[0]/2; //amount read per pass is total length of data, data size is in bytes so use /2 to get short int length
         cout << "data size: " << BUFFSIZE << endl;
-
-        buff = new short int[frameBuffSize];
-        leftBuff = new short int[BUFFSIZE/2];
-        rightBuff = new short int[BUFFSIZE/2];
-
-        cout << "allocated left and right buffs\n";
-
         fwrite(data_size, 1, sizeof(int), outfile); //  - TO BE DELETED
+
+        int stereoShortsWritten = 0; //no short ints written to left and right buffs
 
         //read file untill end
 		while (!feof(infile))
 		{
-            // Reading data in chunks of BUFFSIZE
-			nb = fread(buff,1,frameBuffSize,infile);
-            
-            cout << "splitting\n";
-            //send left and right channels to respective buffers
-            int n = 0;
-            for(int i = 0; i < nb/2; i+=2){
-                leftBuff[(nb_tot/2) + n] = buff[i];
-                rightBuff[(nb_tot/2) + n] = buff[i + 1];
-
-                n++;
-            }
-            cout << bitset<sizeof(leftBuff[0])*8>(leftBuff[nb_tot/2]) << endl;
-            nb_tot += nb;
-
-            cout << "split buff into stereo\n";
-
-            // Writing read data into output file - TO BE DELETED
-			fwrite(buff,1,nb,outfile);
-
             // Increment Number of frames
             cout << "frame: " << count << endl;
 			count++;
+
+            // Reading data in chunks of BUFFSIZE
+			nb = fread(buff,1,frameBuffSize,infile);
+            
+            //send left and right channels to respective buffers     
+            if (stereoShortsWritten < 13230000){
+                for(int i = 0; i < nb/2; i+=2){
+                    leftBuff[stereoShortsWritten] = buff[i];
+                    rightBuff[stereoShortsWritten] = buff[i + 1];
+
+                    stereoShortsWritten++;
+                }
+                cout << stereoShortsWritten << endl;
+                cout << leftBuff[stereoShortsWritten] << endl;
+                cout << "split buff into stereo\n";
+                // Writing read data into output file - TO BE DELETED
+			    fwrite(buff,1,nb,outfile);
+            }
 		}
 
         //get delay times, delay samples by delay times, combine samples, do cross corr
