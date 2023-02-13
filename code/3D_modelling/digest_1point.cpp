@@ -10,17 +10,18 @@ using namespace std;
 
 const float pi = 3.141592;
 
-FILE * infile = fopen("testfile2.wav","rb");		    // Open wave file in read mode
-FILE * outfile = fopen("Output.wav","wb");		    // Create output ( wave format) file in write mode
+FILE * infile = fopen("slaves.wav","rb");		    // Open wave file in read mode
+FILE * outfile = fopen("Output.vis.wav","wb");		    // Create output ( wave format) file in write mode
 
 int audio_leng;
 int sampleRate = 44100; //could be changed but for now sample rate stays hard coded for 41000
 int nb;	// variable storing number of bytes returned
+int data_size[1];
 
 //13230000 is 5 mins @ 44,100 so hard cap on song length at 5 mins
 int LENG_MAX = 13230000; //max length of song in samples
-short int leftBuff[13230000];
-short int rightBuff[13230000];
+short int left_in[13230000];
+short int right_in[13230000];
 
 //for file read
 char readingData = 0;
@@ -44,11 +45,13 @@ typedef struct header_file
 
 typedef struct header_file* header_p;
 
+int frameSize_out = 88200;
+
 //for room simulation
-int resolution = 100; //if resolution was 100 then it would be per cm
-int xLength = 2; //get x,y or z from the actual 3D model then times by resolution (so "10" should be model.getlength() or whatever)
-int yLength = 2;
-int zLength = 4;
+int resolution = 1; //if resolution was 100 then it would be per cm
+int xLength = 6; //get x,y or z from the actual 3D model then times by resolution (so "10" should be model.getlength() or whatever)
+int yLength = 20;
+int zLength = 20;
 int points;
 
 float* pointArray;
@@ -62,20 +65,31 @@ struct point{
 point speaker_L;
 point speaker_R;
 
-int reflections_x = 2;
-int reflections_y = 2;
-int reflections_z = 2;
+int order = 4;
 int rooms;
 
 struct room{
-    int xOffset;
-    int yOffset;
-    int zOffset;
-    //room struct can also contain total absorption coeficient
+    int pos_x;
+    int pos_y;
+    int pos_z;
+
+    bool mirrored_x = 0;
+    bool mirrored_y = 0;
+    bool mirrored_z = 0;
+
+    float totalAbs = 1;
 };
 
 room* roomArr;
 
+struct coefs {
+    float neg = 1;
+    float pos = 1;
+};
+
+coefs coefs_x;
+coefs coefs_y;
+coefs coefs_z;
 
 //funcs
 void init(){
@@ -84,38 +98,95 @@ void init(){
     yLength = yLength * resolution;
     zLength = zLength * resolution;
     points = xLength * yLength * zLength;
-    pointArray = new float[points]; //array that will contain the index score for each point
 
     //init rooms
     //reflections is extra on the border, this adds both sides of border plus middle to get total dimension length
-    int rooms_x = (reflections_x * 2) + 1;
-    int rooms_y = (reflections_y * 2) + 1;
-    int rooms_z = (reflections_z * 2) + 1;
+    int rooms_x = (order * 2) + 1;
+    int rooms_y = (order * 2) + 1;
+    int rooms_z = (order * 2) + 1;
 
     //total rooms is x*y*z
     rooms = rooms_x * rooms_y * rooms_z;
 
-    roomArr = new room[rooms];
+    roomArr = new room[rooms]; 
 
     //total min offset is the length of room * num of reflections in a specific direction
-    int minOffset_x = 0 - (xLength * reflections_x);
-    int minOffset_y = 0 - (yLength * reflections_y);
-    int minOffset_z = 0 - (zLength * reflections_z);
+    int minOffset_x = 0 - (xLength * order);
+    int minOffset_y = 0 - (yLength * order);
+    int minOffset_z = 0 - (zLength * order);
 
-    //applying x,y,z offsets for each room
-    int i = 0;
-    for(int z = 0; z < rooms_z; z++){
-        for(int y = 0; y < rooms_y; y++){
+    //wall absorption coeffs
+    coefs_x.neg = 0.9;
+    coefs_x.pos = 0.9;
+    coefs_y.neg = 0.7;
+    coefs_y.pos = 0.9;
+    coefs_z.neg = 0.9;
+    coefs_z.pos = 0.9;
+
+    //calculate total abs coeffs and check if room is mirrored
+    int r = 0;
+    for(int y = 0; y < rooms_y; y++){
+        for(int z = 0; z < rooms_z; z++){
             for(int x = 0; x < rooms_x; x++){
-                roomArr[i].xOffset = minOffset_x + (xLength * x);
-                roomArr[i].yOffset = minOffset_y + (yLength * y);
-                roomArr[i].zOffset = minOffset_z + (zLength * z);
 
-                // cout << "x: " << roomArr[i].xOffset;
-                // cout << " y: " << roomArr[i].yOffset;
-                // cout << " z: " << roomArr[i].zOffset << endl;
+                roomArr[r].pos_x = x - order;
+                roomArr[r].pos_y = y - order;
+                roomArr[r].pos_z = z - order;
 
-                i++;
+                int absolute_x = abs(roomArr[r].pos_x);
+                int absolute_y = abs(roomArr[r].pos_y);
+                int absolute_z = abs(roomArr[r].pos_z);
+
+                if (roomArr[r].pos_x % 2 != 0){
+                    //is mirrored in this axis
+                    roomArr[r].mirrored_x = 1;
+
+                    float extra_coef = 1;
+                    //extra coef on the end changes whether going in positive or negative direction
+                    if (roomArr[r].pos_x < 0){
+                        extra_coef *= coefs_x.pos;
+                    } else {
+                        extra_coef *= coefs_x.neg;
+                    }
+
+                    roomArr[r].totalAbs *= pow(coefs_x.neg, (absolute_x - 1) / 2) * pow(coefs_x.pos, (absolute_x - 1) / 2) * extra_coef;
+                } else {
+                    roomArr[r].totalAbs *= pow(coefs_x.neg, absolute_x / 2) * pow(coefs_x.pos, absolute_x / 2);
+                }
+
+                if (roomArr[r].pos_y % 2 != 0){
+                    roomArr[r].mirrored_y = 1;
+
+                    float extra_coef = 1;
+                    //extra coef on the end changes whether going in positive or negative direction
+                    if (roomArr[r].pos_y < 0){
+                        extra_coef *= coefs_y.pos;
+                    } else {
+                        extra_coef *= coefs_y.neg;
+                    }
+
+                    roomArr[r].totalAbs *= pow(coefs_y.neg, (absolute_y - 1) / 2) * pow(coefs_y.pos, (absolute_y - 1) / 2) * extra_coef;
+                } else {
+                    roomArr[r].totalAbs *= pow(coefs_y.neg, absolute_y / 2) * pow(coefs_y.pos, absolute_y / 2);
+                }
+
+                if (roomArr[r].pos_z % 2 != 0){
+                    roomArr[r].mirrored_z = 1;
+
+                    float extra_coef = 1;
+                    //extra coef on the end changes whether going in positive or negative direction
+                    if (roomArr[r].pos_z < 0){
+                        extra_coef *= coefs_z.pos;
+                    } else {
+                        extra_coef *= coefs_z.neg;
+                    }
+
+                    roomArr[r].totalAbs *= pow(coefs_z.neg, (absolute_z - 1) / 2) * pow(coefs_z.pos, (absolute_z - 1) / 2) * extra_coef;
+                } else {
+                    roomArr[r].totalAbs *= pow(coefs_z.neg, absolute_z / 2) * pow(coefs_z.pos, absolute_z / 2);
+                }
+
+                r++;
             }
         }
     }
@@ -138,37 +209,57 @@ float get_dist(int x, int y, int z, point speaker){
     return dist;
 }
 
+void xcor(int * source, int * resultant, int sampleNo){
+    float val;
+
+    val += source[sampleNo] * resultant[sampleNo];
+
+    if (sampleNo == frameSize_out){
+        cout << val;
+        val = 0;
+    }
+}
 
 void process(){
 
-    //short int monoBuff_src[BUFFSIZE/2];
-    //for BUFFSIZE/2 combine left and right to mono without delay
-
     cout << "processing\n";
 
-    short int comb_leftBuff[audio_leng];
-    short int comb_rightBuff[audio_leng];
+    short int * comb_leftBuff;
+    short int * comb_rightBuff;
 
-    short int monoBuff[audio_leng];
+    int * monoBuff;
+    int * src_monoBuff;
 
     //for testing, to reverse use nested x,y,z loops for co-ord vals
     int x = xLength/2;
     int y = yLength/2;
     int z = (zLength/4) * 3;
 
+    //for (x,y,z)...
+    //one of these for each point
+    comb_leftBuff = new short int[audio_leng];
+    comb_rightBuff = new short int[audio_leng];
+    monoBuff = new int[audio_leng];
+    src_monoBuff = new int[audio_leng];
+
     //populate room buffer arrays
     for (int r = 0; r < rooms; r++){
-        
-        cout << "room: " << r << endl;
 
-        //adjust x,y,z for position in reflection space
-        int room_x = x + roomArr[r].xOffset;
-        int room_y = y + roomArr[r].yOffset;
-        int room_z = z + roomArr[r].zOffset;
+        int room_x = x + (roomArr[r].pos_x * xLength);
+        int room_y = y + (roomArr[r].pos_y * yLength);
+        int room_z = z + (roomArr[r].pos_z * zLength);
 
-        cout << "x: " << room_x;
-        cout << " z: " << room_y;
-        cout << " x: " << room_z << endl;
+        if (roomArr[r].mirrored_x){
+            room_x = room_x + (2 * ((xLength/2) - x));
+        }
+
+        if (roomArr[r].mirrored_y){
+            room_y = room_y + (2 * ((yLength/2) - y));
+        }
+
+        if (roomArr[r].mirrored_z){
+            room_z = room_z + (2 * ((zLength/2) - z));
+        }
 
         //dist to left
         float dist_L = get_dist(room_x, room_y, room_z, speaker_L);
@@ -183,66 +274,102 @@ void process(){
         int delay_L_samp = delay_L * sampleRate;
         int delay_R_samp = delay_R * sampleRate;
 
-        cout << "dist L secs: " << dist_L << endl;
-        cout << "delay L samples: " << delay_L_samp << endl;
-
         //for each smaple in each buff
         for (int i = audio_leng; i >= 0; i--){
+
+            short int sample;
+
             //apply delays L&R, if index-delay is negative then that index should be 0
             if (i >= delay_L_samp){
-                leftBuff[i] = leftBuff[i - delay_L_samp];
+                sample = left_in[i - delay_L_samp];
             } else {
-                leftBuff[i] = 0;
+                sample = 0;
             }
 
             if (i >= delay_R_samp){
-                rightBuff[i] = rightBuff[i - delay_R_samp];
+                sample = right_in[i - delay_R_samp];
             } else {
-                rightBuff[i] = 0;
+                sample = 0;
             }
 
-            // float invLoss_L = 1/(4*pi*pow(dist_L, 2));
-            // float invLoss_R = 1/(4*pi*pow(dist_R, 2));
-
-            //times by inverse square for distance loss 
-            // leftBuff[i] = leftBuff[i] * invLoss_L;
-            // rightBuff[i] = rightBuff[i] * invLoss_R;
+            //frequency dependant air absorption, could be done later
 
             //times by abs
-            // roomArr[r].totalAbs
+            sample *= roomArr[r].totalAbs;
+            sample *= roomArr[r].totalAbs;
 
             //add delayed buffs to buff array - divide by rooms to get average when summing
-            comb_leftBuff[i] += leftBuff[i]/2;
-            comb_rightBuff[i] += rightBuff[i]/2;
+            comb_leftBuff[i] += sample / 6;
+            comb_rightBuff[i] += sample / 6;
         }
-
-        cout << "room samples delayed and combined\n";
-
-        //combine channels to mono
-        // for (int i = 0; i < audio_leng; i++){
-        //     monoBuff[i] = (comb_leftBuff[i] / 2) + (comb_rightBuff[i] / 2);
-        // }
-        // cout << monoBuff[0] << endl;
-
-        // cout << "combined stereo buffs to mono\n";
-
-        //split monobuff into 3 sec chunks and do cross corr on it vs combined source 
     }
 
+    //write 'DATA' identifier to wav file
+    char dataTag[4] = {'d', 'a', 't', 'a'};
+    fwrite(dataTag, 1, 4, outfile);
+
+    //write dataSize to file
+    fwrite(data_size, 1, sizeof(int), outfile);
+
     //here wav file could be reconstructed (i dont know why its *4 think it should be *2 but 4 works so ???????)
-        short int out[audio_leng*4];
-        for (int i = 0; i < audio_leng; i++){
-                out[i*2] = comb_leftBuff[i];
-                out[(i*2) + 1] = comb_rightBuff[i];
+    short int * out;
+    out = new short int[audio_leng*4];
+    for (int i = 0; i < audio_leng; i++){
+            out[i*2] = comb_leftBuff[i];
+            out[(i*2) + 1] = comb_rightBuff[i];
+    }
+
+    fwrite(out,1,audio_leng*4,outfile);
+
+
+    //write new 'visu' segment in ouput file
+    char visuTag[4] = {'v', 'i', 's', 'u'};
+    fwrite(visuTag, 1, 4, outfile);
+    
+    short int frameNo = 0;
+    short int * frameNo_p = &frameNo;
+    int val = 0; //xcorr value
+    int * val_p = &val;
+
+    int n = 0; //point in xcorr frame
+
+    //combine channels to mono
+    //split monobuff into 3 sec chunks and do cross corr on it vs combined source
+    for (int i = 0; i < audio_leng; i++){
+
+        src_monoBuff[i] = (left_in[i]/2) + (right_in[i]/2);
+        monoBuff[i] = (comb_leftBuff[i] / 2) + (comb_rightBuff[i] / 2);
+
+        //xcorr happens here
+        val += src_monoBuff[i] * monoBuff[i];
+
+        if (n == frameSize_out){
+            cout << "val: " << val << endl << endl;
+
+            //frameNo, value
+            fwrite(frameNo_p, 1, 2, outfile);
+            fwrite(val_p, 1, 4, outfile);
+
+            val = 0;
+            n = 0;
+            frameNo++;
         }
-        fwrite(out,1,audio_leng*4,outfile);
+
+        n++;
+    }
+
+    delete [] comb_leftBuff;
+    delete [] comb_rightBuff;
+    delete [] monoBuff;
+    delete [] src_monoBuff;
+    delete [] out;
 }
 
 int main()
 {
     init();
 
-    int frameBuffSize = 16384;
+    int frameSize_in = 16384;
     short int buff[16384];
 	int count = 0;						                // For counting number of frames in wave file.
 	header_p meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
@@ -250,14 +377,14 @@ int main()
 
     char check_buff[1];
     char data_buff[4];
-    int data_size[1];
 
 	if (infile)
 	{
 		fread(meta, 1, sizeof(header), infile);
-		fwrite(meta,1, sizeof(*meta), outfile); // - TO BE DELETED
-		cout << " Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
-		cout << " Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
+        // meta->num_channels = 1; //change for mono
+		fwrite(meta,1, sizeof(*meta), outfile);
+		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
+		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
 
         //testing - prints WAVE
         for (int i = 0; i < 4; i++){
@@ -268,7 +395,7 @@ int main()
         //checking for data tag
         while (!readingData){
             fread(check_buff, 1, sizeof(char), infile);
-            fwrite(check_buff, 1, sizeof(char), outfile); // - TO BE DELETED
+            // fwrite(check_buff, 1, sizeof(char), outfile);
 
             for (int i = 0; i < 3; i++){
                 data_buff[i] = data_buff[i + 1];
@@ -285,41 +412,38 @@ int main()
 
         //read next 4 bytes which is data size
         fread(data_size, 1, sizeof(int), infile);
-        audio_leng = data_size[0]/4; //leng in samples /2 to get short int then /2 to split stereo channels
-        cout << "data size: " << audio_leng << endl;
-        fwrite(data_size, 1, sizeof(int), outfile); //  - TO BE DELETED
+        audio_leng = data_size[0]/4; //leng in samples: /2 to get short int then /2 to split stereo channels
+        // data_size[0] = data_size[0]/2; //half data size if writing mono
 
-        int stereoShortsWritten = 0; //no short ints written to left and right buffs
+        cout << "data size: " << audio_leng << endl;
+        // fwrite(data_size, 1, sizeof(int), outfile); 
+
+        int sampsWritten = 0; //no samples (short int) written to left and right buffs
 
         //read file untill end
 		while (!feof(infile))
 		{
             // Increment Number of frames
-            // cout << "frame: " << count + 1 << endl;
 			count++;
 
             // Reading data in chunks of BUFFSIZE
-			nb = fread(buff,1,frameBuffSize,infile);
+			nb = fread(buff,1,frameSize_in,infile);
             
             //send left and right channels to respective buffers, nb is bytes so /2 to get short ints
-            if (stereoShortsWritten < LENG_MAX){
+            if (sampsWritten < LENG_MAX){
                 for(int i = 0; i < nb/2; i+=2){
-                    leftBuff[stereoShortsWritten] = buff[i];
-                    rightBuff[stereoShortsWritten] = buff[i + 1];
+                    left_in[sampsWritten] = buff[i];
+                    right_in[sampsWritten] = buff[i + 1];
 
-                    stereoShortsWritten++;
+                    sampsWritten++;
                 }
-
-                // cout << rightBuff[stereoShortsWritten - 1] << endl;
-                // Writing read data into output file - TO BE DELETED
-			    // fwrite(buff,1,nb,outfile);
             }
 		}
 
         //get delay times, delay samples by delay times, combine samples, do cross corr
         process();
 
-	    cout << " Number of frames in the input wave file are " << count << endl;
+	    cout << "Number of frames in the input wave file are " << count << endl;
 	}
 
     delete [] pointArray;
