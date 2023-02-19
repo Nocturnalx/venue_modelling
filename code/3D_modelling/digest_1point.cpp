@@ -8,8 +8,6 @@
 
 using namespace std;
 
-const float pi = 3.141592;
-
 FILE * infile = fopen("slaves.wav","rb");		    // Open wave file in read mode
 FILE * outfile = fopen("Output.vis.wav","wb");		    // Create output ( wave format) file in write mode
 
@@ -209,17 +207,6 @@ float get_dist(int x, int y, int z, point speaker){
     return dist;
 }
 
-void xcor(int * source, int * resultant, int sampleNo){
-    float val;
-
-    val += source[sampleNo] * resultant[sampleNo];
-
-    if (sampleNo == frameSize_out){
-        cout << val;
-        val = 0;
-    }
-}
-
 void process(){
 
     cout << "processing\n";
@@ -304,6 +291,8 @@ void process(){
         }
     }
 
+    //proccesing done
+
     //write 'DATA' identifier to wav file
     char dataTag[4] = {'d', 'a', 't', 'a'};
     fwrite(dataTag, 1, 4, outfile);
@@ -365,10 +354,7 @@ void process(){
     delete [] out;
 }
 
-int main()
-{
-    init();
-
+void readFile(){
     int frameSize_in = 16384;
     short int buff[16384];
 	int count = 0;						                // For counting number of frames in wave file.
@@ -448,5 +434,13 @@ int main()
 
     delete [] pointArray;
     delete [] roomArr;
+}
+
+int main()
+{
+    init();
+
+    readFile();
+    
     return 0;
 }
