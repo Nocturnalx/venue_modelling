@@ -2,7 +2,14 @@ var xLength;
 var yLength;
 var zLength;
 var resolution;
-var reflections;
+var order;
+
+var xNeg;
+var xPos;
+var yNeg;
+var yPos;
+var zNeg;
+var zPos;
 
 var inputBox;
 var inputShowing = false;
@@ -34,7 +41,7 @@ function onload(){
     gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-function newTicket()
+function newUser()
 {
     let input = document.getElementById('usernameInput');
     let loginArea = document.getElementById('loginArea');
@@ -104,7 +111,29 @@ function updateParameters(){
     yLength = document.getElementById('yLength').value.toString();
     zLength = document.getElementById('zLength').value.toString();
     resolution = document.getElementById('resolution').value.toString();
-    reflections = document.getElementById('reflections').value.toString();
+    order = document.getElementById('order').value.toString();
+
+    xNeg = document.getElementById('xNeg').value.toString();
+    xPos = document.getElementById('xPos').value.toString();
+    yNeg = document.getElementById('yNeg').value.toString();
+    yPos = document.getElementById('yPos').value.toString();
+    zNeg = document.getElementById('zNeg').value.toString();
+    zPos = document.getElementById('zPos').value.toString();
+
+    let paramsObj = {
+        "xLength": xLength,
+        "yLength": yLength,
+        "zLength": zLength,
+        "resolution": resolution,
+        "order": order,
+
+        "xNeg": xNeg,
+        "xPos": xPos,
+        "yNeg": yNeg,
+        "yPos": yPos,
+        "zNeg": zNeg,
+        "zPos": zPos
+    }
 
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
@@ -112,6 +141,7 @@ function updateParameters(){
             let dataStored = parseInt(xmlHttp.responseText);
             if (dataStored){
                 console.log(`new parameters uploaded for ${username}`);
+                alert('Parameters Updated!')
             } else {
                 alert('problem when uploading parameters');
             }
@@ -119,9 +149,8 @@ function updateParameters(){
     }
 
     xmlHttp.open("POST", `/${username}/update_params`, true); // true for asynchronous
-    data = `xLength=${xLength}&yLength=${yLength}&zLength=${zLength}&resolution=${resolution}&reflections=${reflections}`;
-    xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xmlHttp.send(data);
+    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlHttp.send(JSON.stringify(paramsObj));
 }
 
 function getParameters(){
@@ -129,19 +158,33 @@ function getParameters(){
     let xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-            let responseObj = JSON.parse(xmlHttp.responseText);
+            let paramsObj = JSON.parse(xmlHttp.responseText);
             
-            xLength = responseObj.xLength;
-            yLength = responseObj.yLength;
-            zLength = responseObj.zLength;
-            resolution = responseObj.resolution;
-            reflections = responseObj.reflections;
+            xLength = paramsObj.xLength;
+            yLength = paramsObj.yLength;
+            zLength = paramsObj.zLength;
+            resolution = paramsObj.resolution;
+            order = paramsObj.order;
+
+            xNeg = paramsObj.xNeg;
+            xPos = paramsObj.xPos;
+            yNeg = paramsObj.yNeg;
+            yPos = paramsObj.yPos;
+            zNeg = paramsObj.zNeg;
+            zPos = paramsObj.zPos;
 
             document.getElementById('xLength').value = xLength;
             document.getElementById('yLength').value = yLength;
             document.getElementById('zLength').value = zLength;
             document.getElementById('resolution').value = resolution;
-            document.getElementById('reflections').value = reflections;
+            document.getElementById('order').value = order;
+
+            document.getElementById('xNeg').value = xNeg;
+            document.getElementById('xPos').value = xPos;
+            document.getElementById('yNeg').value = yNeg;
+            document.getElementById('yPos').value = yPos;
+            document.getElementById('zNeg').value = zNeg;
+            document.getElementById('zPos').value = zPos;
         } 
     }
 
@@ -152,7 +195,7 @@ function getParameters(){
 function upload(){
     //upload file from file input when upload button pressed
 
-    let file = document.getElementById('fileInput').files[0];
+    let file = document.getElementById('uploadFileInput').files[0];
 
     let formData = new FormData();
     formData.append('file', file);
@@ -237,4 +280,49 @@ function sendCheck(){
 
     xmlHttp.open("GET", `/${username}/file_check`, true); // true for asynchronous
     xmlHttp.send();
+}
+
+function loadVisualiser(visData){
+
+    headerSize = 20;
+
+    headerArr = new Int32Array(visData.buffer);
+
+    let xLeng_vis = headerArr[0];
+    let yLeng_vis = headerArr[1];
+    let zLeng_vis = headerArr[2];
+    let audioLeng = headerArr[3];
+    let frameLeng = headerArr[4];
+
+    console.log(`x: ${xLeng_vis} y: ${yLeng_vis} z: ${zLeng_vis}, audioLeng: ${audioLeng} frameLeng: ${frameLeng}`);
+
+    let frameCount = Math.floor(audioLeng/frameLeng);
+
+    if (audioLeng % frameLeng != 0){
+        frameCount += 1;
+    }
+
+    console.log(`frameCount: ${frameCount}`)
+}
+
+function playFile(){
+    let file = document.getElementById('playFileInput').files[0];
+    let reader = new FileReader();
+
+    reader.onload = function(){
+        let data = reader.result;
+        let intArr = new Uint8Array(data);
+
+        for (i = 3; 0 < intArr.length; i++){
+            if (intArr[i] == 117 && intArr[i - 1] == 115 && intArr[i - 2] == 105 && intArr[i - 3] == 118){
+                
+                let visData = intArr.slice(i + 1, intArr.length);
+
+                loadVisualiser(visData);
+                break;
+            }
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
 }

@@ -16,7 +16,7 @@ var storage = multer.diskStorage(
 
 const upload = multer({storage: storage});
 
-app.use(bodyParser.json({limit: '5mb'}));
+app.use(bodyParser.json({limit: '60mb'}));
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const port = 3000;
@@ -85,21 +85,35 @@ app.post('/:username/login', (req, res) => {
 app.post('/:username/update_params', urlencodedParser,(req, res) => {
     //get default input values and store them at username in sql
     //get username and params
+
+    paramsObj = req.body;
+
     let username = req.params.username;
-    let xLength = req.body.xLength;
-    let yLength = req.body.yLength;
-    let zLength = req.body.zLength;
-    let resolution = req.body.resolution;
-    let reflections = req.body.reflections;
+
+    let xLength = paramsObj.xLength;
+    let yLength = paramsObj.yLength;
+    let zLength = paramsObj.zLength;
+    let resolution = paramsObj.resolution;
+    let order = paramsObj.order;
+
+    let xNeg = paramsObj.xNeg;
+    let xPos = paramsObj.xPos;
+    let yNeg = paramsObj.yNeg;
+    let yPos = paramsObj.yPos;
+    let zNeg = paramsObj.zNeg;
+    let zPos = paramsObj.zPos;
 
     let sql = `UPDATE userTable 
-    SET xLength = ${xLength}, yLength = ${yLength}, zLength = ${zLength}, resolution = ${resolution}, reflections = ${reflections} 
+    SET xLength = ${xLength}, yLength = ${yLength}, zLength = ${zLength}, 
+    resolution = ${resolution}, reflections = ${order}, 
+    xNeg = ${xNeg}, xPos = ${xPos}, yNeg = ${yNeg}, yPos = ${yPos}, zNeg = ${zNeg}, zPos = ${zPos} 
     WHERE username = '${username}'`;
 
     //check uname doesnt exist currently in database
     con.query(sql, (err,results) => { 
         if (err){
             res.write('0'); //sql problem
+            console.log(err);
         } else {
             res.write('1'); //no problem
         }
@@ -111,7 +125,10 @@ app.get('/:username/get_params', (req, res) => {
 
     let username = req.params.username;
 
-    let sql = `SELECT xLength, yLength, zLength, resolution, reflections FROM userTable WHERE username = '${username}'`;
+    let sql = `SELECT xLength, yLength, zLength, 
+    resolution, reflections, 
+    xNeg, xPos, yNeg, yPos, zNeg, zPos
+    FROM userTable WHERE username = '${username}'`;
 
     //check uname doesnt exist currently in database
     con.query(sql, (err,results) => {
@@ -124,7 +141,14 @@ app.get('/:username/get_params', (req, res) => {
             yLength: row.yLength,
             zLength: row.zLength,
             resolution: row.resolution,
-            reflections: row.reflections
+            order: row.reflections,
+
+            xNeg: row.xNeg,
+            xPos: row.xPos,
+            yNeg: row.yNeg,
+            yPos: row.yPos,
+            zNeg: row.zNeg,
+            zPos: row.zPos
         });
 
         res.end();
@@ -189,7 +213,7 @@ app.get('/:username/has_ticket', (req, res) => {
 app.get('/:username/file_check', (req, res) => {
     //check out/ folder for file by username
     let username = req.params.username;
-    let path = `digest/out/${username}`;
+    let path = `digest/out/${username}.vis.wav`;
 
     try {
         if (fs.existsSync(path)) {
@@ -207,7 +231,7 @@ app.get('/:username/file_check', (req, res) => {
 
 app.get('/:username/download', (req, res) => {
     let username = req.params.username;
-    let path = `/digest/out/${username}`;
+    let path = `/digest/out/${username}.vis.wav`;
 
     try {
         console.log(`sending to ${username}`);

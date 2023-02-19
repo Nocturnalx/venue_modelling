@@ -20,20 +20,34 @@
             <div>
                 <button>Play</button>
                 <button>Pause</button>
+                <div class="inputContainer" id="fileInputDiv">
+                    <input type="file" id="playFileInput" name="playFileInput">
+                    <button onclick="playFile()">Play</button>
+                </div>
             </div>
 
             <div class="buttonContainer">
                 <div class="inputContainer">
-                    xLength: <input type="number" id="xLength" value="5" class="numInput">
-                    yLength: <input type="number" id="yLength" value="5" class="numInput">
-                    zLength: <input type="number" id="zLength" value="5" class="numInput">
-                    resolution: <input type="number" id="resolution" value="1" class="numInput">
-                    reflections: <input type="number" id="reflections" value="3" class="numInput">
-                    <button onclick="updateParameters()">Update</button>
+                    <div style="padding-bottom: 5;">
+                        xLength: <input type="number" id="xLength" value="5" class="numInput">
+                        yLength: <input type="number" id="yLength" value="5" class="numInput">
+                        zLength: <input type="number" id="zLength" value="5" class="numInput">
+                        resolution: <input type="number" id="resolution" value="10" class="numInput">
+                        order: <input type="number" id="order" value="3" class="numInput">
+                    </div>
+                    <div>
+                        top: <input type="number" id="yPos" value="0.5" class="numInput">
+                        bottom: <input type="number" id="yNeg" value="0.5" class="numInput">
+                        front: <input type="number" id="zNeg" value="0.5" class="numInput">
+                        back: <input type="number" id="zPos" value="0.5" class="numInput">
+                        left: <input type="number" id="xNeg" value="0.5" class="numInput">
+                        right: <input type="number" id="xPos" value="0.5" class="numInput">
+                        <button onclick="updateParameters()">Update</button>
+                    </div>
                 </div>
 
-                <div class="inputContainer" id="fileInputDiv">
-                    <input type="file" id="fileInput" name="fileInput">
+                <div class="inputContainer" style="float: right;" id="fileInputDiv">
+                    <input type="file" id="uploadFileInput" name="uploadFileInput">
                     <button onclick="upload()">Upload</button>
                 </div>
 
@@ -44,7 +58,7 @@
             <div id="loginArea" class="loginArea">
                 Username: <input type="text" id="usernameInput" maxlength="8" value="">
                 <Button onclick="login()">Login</Button>
-                <button onclick="newTicket()">New Ticket</button>
+                <button onclick="newUser()">New User</button>
             </div>
         </div>
     </body>
