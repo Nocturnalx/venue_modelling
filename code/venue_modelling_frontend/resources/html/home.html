@@ -14,15 +14,17 @@
         <div class="container">
             <!--main body-->
             <div class="canvasContainer">
-                <canvas id="glCanvas" class="canvas"></canvas>
+                <canvas id="canvasTop" class="canvas"></canvas>
+                <canvas id="CanvasBreadth" class="canvas"></canvas>
+                <canvas id="canvasLength" class="canvas"></canvas>
             </div>
             
             <div>
-                <button>Play</button>
+                <button onclick="playVisu()">Play</button>
                 <button>Pause</button>
                 <div class="inputContainer" id="fileInputDiv">
                     <input type="file" id="playFileInput" name="playFileInput">
-                    <button onclick="playFile()">Play</button>
+                    <button onclick="newVisuFile()">Play</button>
                 </div>
             </div>
 

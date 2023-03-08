@@ -89,7 +89,7 @@ button {
 }
 
 .container{
-    margin: 1%;
+    padding-top: 30px;
 }
 
 .loginArea{
@@ -103,9 +103,12 @@ button {
 }
 
 .canvas{
-    margin-top: 2%;
-    height: 70%;
-    width: 80%;
+    margin: 2%;
+}
+
+.canvasContainer{
+    height: 600px;
+    width: 600px;
 }
 
 .inputContainer{

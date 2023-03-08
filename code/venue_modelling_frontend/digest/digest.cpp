@@ -51,7 +51,7 @@ typedef struct header_file
 
 typedef struct header_file* header_p;
 
-int frameSize_out = 88200;
+int frameSize_out = 22050;
 
 // ##room simulation vars##
 int resolution; //if resolution was 100 then it would be per cm
@@ -526,9 +526,9 @@ void writeVisu(){
 
     int pointNo = 0;
 
-    for (int z = 25; z < 26; z++){
-        for (int y = 15; y < 16; y++){
-            for (int x = 25; x < 26; x++){
+    for (int z = 0; z < zLength; z++){
+        for (int y = 0; y < yLength; y++){
+            for (int x = 0; x < xLength; x++){
 
                 short int frameNo = 0;
                 float xcor = 0; //xcorr value
@@ -536,6 +536,8 @@ void writeVisu(){
                 float divisor = 0;
                 float src_sum = 0;
                 float res_sum = 0;
+
+                // cout << "pointNo: " << pointNo << endl;
 
                 //l&r buffs get filled with processed values
                 process(x, y, z, monoBuff);
@@ -586,8 +588,12 @@ void writeVisu(){
 
                         xcor = numerator / divisor;
 
+                        short int out = xcor * 32767;
+
+                        // cout << "xcor: " << out << endl;
+
                         //this will be add value to point array when doing gpu accel
-                        fwrite(&xcor, 1, 4, outfile);
+                        fwrite(&out, 1, 2, outfile);
 
                         numerator = 0;
                         divisor = 0;
@@ -602,6 +608,7 @@ void writeVisu(){
                 }
 
                 pointNo++;
+                cout << "Point No; " << pointNo << " of " << points << endl;
             }
         }
     }
