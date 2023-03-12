@@ -1,0 +1,1 @@
+sudo g++ -Wall -I/usr/include/cppconn -o digest_seq digest.cpp -L/usr/lib -lmysqlcppconn
