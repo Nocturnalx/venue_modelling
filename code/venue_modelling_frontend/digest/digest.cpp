@@ -574,7 +574,7 @@ void writeVisu(){
 
                 int n = 0; //point in xcorr frame
                 //combine channels to mono
-                //split monobuff into 3 sec chunks and do cross corr on it vs combined source
+                //split monobuff into chunks and do cross corr on it vs combined source
                 for (int i = 0; i < audio_leng; i++){
 
                     //xcorr happens here
