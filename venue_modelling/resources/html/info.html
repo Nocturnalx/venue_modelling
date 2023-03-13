@@ -9,8 +9,28 @@
         </div>
         
         <div class="Container">
-            <h1>Info</h1>
-            <p>Here is information.</p>
+            <h1>User Guide</h1>
+            
+            <h2>Log in</h2>
+            <p>To create a new account type a username into the pop up box and click the "new user" button, to sign in again after you have created an account type in your user name and click on the "Log in" button</p>
+            
+            <h2>Uploading simulation parameters</h2>
+            <p>Once logged in, in the bottom left of the screen, there is a table containing paraters used in the simulation of the room.</p>
+            <p>xLength, yLength, and zLength are the width, height, and length of the room respectively.</p>
+            <p>resolution is the amount of calculation points per meter so 10 would be 10 evenly spaced points every meter in all directions.</p>
+            <p>order is not exactly the max order of the reflections, but rather the order of the reflections in each cardinal direction x,y,z however, reflections in diagonal planes will be a higher order and are still calculated.</p>
+            <p>The next 6 parameters top, bottom etc. represent the absorption of each respective wall however, it is flat energy loss across the spectrum rather than frequency dependant absorption.</p>
+            <p>After you have set the parameters to the desired values, clicking the "Update" button will send those values to the database so the Algorithm can access them.</p>
+
+            <h2>Uploading audio</h2>
+            <p>In the bottom right of the screen there is a file input box, click on "Choose file" to open a file dialogue then click on "upload" to send the file to the server and begin the processing.</p>
+            <p>Before uploading you must ensure that the file you upload is a <b><i>16 bit PCM wav</i></b> with a sample rate of <b><i>44,100 Hz</i>.</b></p>
+            <p>Once the file has been uploaded, while you are logged in, the browser will ask the server every 5 seconds if processing has been completed. Once the simulation has been completed the browser will present you a button to download the output file.</p>
+            <p>Processing may take a while depending on the amount of points being simulated... (xLength * yLength * zLength) * resolution^3, however, you can close the web site and log back in at a later time and the browser will still be able to check for the simulatioin completing</p>
+
+            <h2>Playing back a visualiser file</h2>
+            <p>Above the parameter input area is another file input used for the playback of visualiser files, once the .vis.wav has been downloaded you can click on "choose file", select the file, then click on the "Load" button to load the file into the visualiser.</p>
+            <p>After loading the visualiser, clicking "play" will begin both audio and visualiser playback, the top-left box is the top down view of the room, the top-right box is the length ways view, and the bottom box is the length ways view.</p>
         </div>
     </body>
 </html>
