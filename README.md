@@ -87,7 +87,8 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     sudo ufw allow 443
     ```
 
-3. Set up node packages
+3. Set up node packages.
+
     ***Make sure you are in the same folder as venue_modelling.js and run.sh***
     ```
     npm install express
