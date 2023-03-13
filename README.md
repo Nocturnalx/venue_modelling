@@ -76,7 +76,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 
 2. Setup nginx reverse proxy.
 
-    You can use `bash setup/nginx.sh` but if that doesnt work or you want to be more careful with what you are doing use the following:
+    You can use `bash setup/nginx_setup.sh` but if that doesnt work or you want to be more careful with what you are doing use the following:
     ```
     sudo rm /etc/nginx/sites-enabled/default
     sudo cp node.conf /etc/nginx/sites-available
@@ -106,16 +106,16 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     If you have a cuda-compatible gpu in your system use:
 
     ```
-    bash digest/compile.sh
+    bash setup/compile.sh
     ```
 
     Otherwise use the sequential version of the digest algorithm:
 
     ```
-    bash digest/compile_seq.sh
+    bash setup/seq_compile.sh
     ```
 
 2. 
-    You can then use `bash node_start.sh` to run the node.js web server with nodemon and bash `digest_start.sh` to start the digest algorithm.
+    You can then use `bash node_start.sh` to run the node.js web server with nodemon and bash `bash digest_start.sh` to start the digest algorithm.
 
     To run the servers as detatched processes you can install *screen* with `sudo apt install screen` and run each command in a new screen instance.
