@@ -411,17 +411,6 @@ __global__ void combine(short int *d_monoBuff, short int *d_left_in, short int *
     }
 }
 
-//not yet
-// __global__ void xcor(short int *d_monoBuff, short int *d_src_monoBuff,  int n) {
-
-//     int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    
-//     //thread id must be less than array length
-//     if (tid < n){
-         
-//     }
-// }
-
 //sequential func
 void process(int x, int y, int z, short int * monoBuff, short int * d_monoBuff){ 
 
