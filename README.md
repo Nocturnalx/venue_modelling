@@ -10,9 +10,10 @@ Open the terminal and type:
 sudo apt update && sudo apt upgrade
 ```
 
-### SQL server.
-1. Install and setup mariaDB
+Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 
+### SQL server.
+1. Install and setup mariaDB:
     ```
     sudo apt install mariadb-server
     sudo mysql_secure_installation
@@ -22,7 +23,6 @@ sudo apt update && sudo apt upgrade
     Log into server with `mysql -u root -p` and give password when prompted.
 
     Setup DB and tables:
-
     ```
     CREATE DATABASE venmodDB;
 
@@ -51,15 +51,12 @@ sudo apt update && sudo apt upgrade
 
 3. Setup user.
     Create mysql user called webuser with password webuser:
-
     ```
     CREATE USER 'webuser'@'localhost' IDENTIFIED BY 'webuser';
     ```
-
     Webuser is the default password but you can change it in the code to be whatever you like, however, the SQL server does not face the open web so it is not necesary to change it.
 
     Grant priveledges to user:
-
     ```
     GRANT SELECT INSERT UPDATE ON venmodDB.userTable TO 'webuser'@'localhost'; 
     GRANT SELECT INSERT UPDATE DELETE ON venmodDB.ticketTable TO 'webuser'@'localhost';
@@ -77,6 +74,7 @@ sudo apt update && sudo apt upgrade
     ```
 
 2. Setup nginx reverse proxy.
+    You can use `bash setup/nginx.sh` but if that doesnt work or you want to be more careful with what you are doing use the following:
     ```
     sudo rm /etc/nginx/sites-enabled/default
     sudo cp node.conf /etc/nginx/sites-available
@@ -88,7 +86,7 @@ sudo apt update && sudo apt upgrade
     ```
 
 3. Set up node packages
-    In the folder containing venue_modelling.js.
+    ***Make sure you are in the same folder as venue_modelling.js and run.sh***
     ```
     npm install express
     npm install multer
@@ -115,6 +113,6 @@ sudo apt update && sudo apt upgrade
     ```
 
 2. 
-    You can then use `bash run.sh` to run the node.js server with nodemon and bash `start_digest.sh` to start the digest algorithm.
+    You can then use `bash start_node.sh` to run the node.js web server with nodemon and bash `start_digest.sh` to start the digest algorithm.
 
     To run the servers as detatched processes you can install *screen* with `sudo apt install screen` and run each command in a new screen instance.
