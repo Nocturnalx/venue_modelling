@@ -50,12 +50,13 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     ```
 
 3. Setup user.
+
     Create mysql user called webuser with password webuser:
     ```
     CREATE USER 'webuser'@'localhost' IDENTIFIED BY 'webuser';
     ```
     Webuser is the default password but you can change it in the code to be whatever you like, however, the SQL server does not face the open web so it is not necesary to change it.
-
+    
     Grant priveledges to user:
     ```
     GRANT SELECT INSERT UPDATE ON venmodDB.userTable TO 'webuser'@'localhost'; 
