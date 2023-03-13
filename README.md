@@ -56,7 +56,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     CREATE USER 'webuser'@'localhost' IDENTIFIED BY 'webuser';
     ```
     Webuser is the default password but you can change it in the code to be whatever you like, however, the SQL server does not face the open web so it is not necesary to change it.
-    
+
     Grant priveledges to user:
     ```
     GRANT SELECT INSERT UPDATE ON venmodDB.userTable TO 'webuser'@'localhost'; 
@@ -75,6 +75,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     ```
 
 2. Setup nginx reverse proxy.
+
     You can use `bash setup/nginx.sh` but if that doesnt work or you want to be more careful with what you are doing use the following:
     ```
     sudo rm /etc/nginx/sites-enabled/default
