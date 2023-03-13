@@ -115,6 +115,6 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     ```
 
 2. 
-    You can then use `bash start_node.sh` to run the node.js web server with nodemon and bash `start_digest.sh` to start the digest algorithm.
+    You can then use `bash node_start.sh` to run the node.js web server with nodemon and bash `digest_start.sh` to start the digest algorithm.
 
     To run the servers as detatched processes you can install *screen* with `sudo apt install screen` and run each command in a new screen instance.
