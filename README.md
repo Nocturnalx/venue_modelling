@@ -1,13 +1,13 @@
 # set up guide
 
-~Pre-requisites~
+## Pre-requisites
 
 Download/clone git repository..
 
 In the terminal type:
 sudo apt update && sudo apt upgrade
 
-SQL server.
+### SQL server.
 1. Install and setup mariaDB
      sudo apt install mariadb-server
      sudo mysql_secure_installation
@@ -56,7 +56,7 @@ SQL server.
     FLUSH PRIVILEDGES;
 
 
-node.js and nginx
+### node.js and nginx
 1. Install packages.
     sudo apt install nginx 
     sudo apt install nodejs
@@ -81,7 +81,7 @@ node.js and nginx
 
 
 
-~setup~
+## setup
 
 1. 
     If you have a cuda-compatible gpu in your system use:
