@@ -53,6 +53,8 @@ typedef struct header_file
 
 typedef struct header_file* header_p;
 
+header_p meta;
+
 int frameSize_out;
 
 // ##room simulation vars##
@@ -462,6 +464,9 @@ void writeWav(){
 
     cout << "writing wav\n";
 
+    meta->num_channels = 1; //change for mono
+    fwrite(meta, 1, sizeof(*meta), outfile); 
+
     //write 'data' identifier to wav file
     char dataTag[4] = {'d', 'a', 't', 'a'};
     fwrite(dataTag, 1, 4, outfile);
@@ -607,37 +612,51 @@ void writeVisu(){
 }
 
 // read header and data from input file
-void readFile(){
+char readFile(){
+    char err_code = 3; // 0 is good read, 1 is incorrect format (16 bit, stereo, PCM), and 2 is bad file (no WAVE or data chunk), 3 is defualt so undefined err
+
     int frameSize_in = 16384;
     short int buff[16384];
 	int count = 0;						                // For counting number of frames in wave file.
-	header_p meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
+	meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
 
     char check_buff[1];
     char data_buff[4];
 
-	if (infile)
-	{
-		fread(meta, 1, sizeof(header), infile);
-        meta->num_channels = 1; //change for mono
-		fwrite(meta,1, sizeof(*meta), outfile);
+	if (infile){
+        fread(meta, 1, sizeof(header), infile);
 
-        //testing - prints WAVE
+        char WAVE[4] = {'W','A','V','E'};
+
+        //testing - prints WAVE if its a wav file else returns bad read
         for (int i = 0; i < 4; i++){
-            cout << meta->format[i];
+            char ch = meta->format[i];
+            if (ch == WAVE[i]){
+                cout << ch;
+            } else {
+                cout << endl;
+
+                err_code = 2;
+                return err_code;
+            }
         }
         cout << endl;
 
-		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
+        //check bit size
+        if (meta->bits_per_sample != 16 || meta->num_channels != 2 || meta->audio_format != 1){
+            err_code = 1;
+            return err_code;
+        }
+
 		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
         sampleRate = meta->sample_rate;
         frameSize_out = sampleRate/20;
 
         //for file read
-        char readingData = 0;
+        char dataTagFound = 0;
 
         //checking for data tag
-        while (!readingData){
+        for (int i = 0; i < 1500; i++){
             fread(check_buff, 1, sizeof(char), infile);
             // fwrite(check_buff, 1, sizeof(char), outfile);
 
@@ -649,84 +668,122 @@ void readFile(){
 
             //there must be a better way to do this?????
             if (data_buff[3] == 'a' && data_buff[2] == 't' && data_buff[1] == 'a' && data_buff[0] == 'd'){
-                readingData = !readingData;
+                dataTagFound = 1;
+                break;
             }
         }
-        cout << "data found!\n";
 
-        data_size = new int[1];
-        //read next 4 bytes which is data size
-        fread(data_size, 1, sizeof(int), infile);
-        audio_leng = data_size[0]/4; //leng in samples: /2 to get short int then /2 to split stereo channels
-        
-        cout << "audio_leng: " << audio_leng << endl;
+        //if data tag is found begin read
+        if (dataTagFound){
+            cout << "data found!\n";
 
-        left_in = new short int [audio_leng];
-        right_in = new short int [audio_leng];
-        cudaMalloc((void**)&d_left_in, sizeof(short int) * audio_leng);
-        cudaMalloc((void**)&d_right_in, sizeof(short int) * audio_leng);
-
-        for (int i = 0; i < audio_leng; i++){
-            left_in[i] = 0;
-            right_in[i] = 0;
-        }
-
-        int sampsWritten = 0; //no samples (short int) written to left and right buffs
-
-        //read file untill end
-		while (!feof(infile))
-		{
-            // Increment Number of frames
-			count++;
-
-            // Reading data in chunks of BUFFSIZE
-			nb = fread(buff,1,frameSize_in,infile);
+            data_size = new int[1];
+            //read next 4 bytes which is data size
+            fread(data_size, 1, sizeof(int), infile);
+            audio_leng = data_size[0]/4; //leng in samples: /2 to get short int then /2 to split stereo channels
             
-            //send left and right channels to respective buffers, nb is bytes so /2 to get short ints
-            // if (sampsWritten < LENG_MAX)...
-            for(int i = 0; i < nb/2; i+=2){
-                left_in[sampsWritten] = buff[i];
-                right_in[sampsWritten] = buff[i + 1];
+            cout << "audio_leng: " << audio_leng << endl;
 
-                sampsWritten++;
+            left_in = new short int [audio_leng];
+            right_in = new short int [audio_leng];
+            cudaMalloc((void**)&d_left_in, sizeof(short int) * audio_leng);
+            cudaMalloc((void**)&d_right_in, sizeof(short int) * audio_leng);
+
+            for (int i = 0; i < audio_leng; i++){
+                left_in[i] = 0;
+                right_in[i] = 0;
             }
-		}
-        
-        cudaMemcpy(d_left_in, left_in, sizeof(short int) * audio_leng, cudaMemcpyHostToDevice);
-        cudaMemcpy(d_right_in, right_in, sizeof(short int) * audio_leng, cudaMemcpyHostToDevice);
 
-	    cout << "Number of frames in the input wave file are " << count << endl;
+            int sampsWritten = 0; //no samples (short int) written to left and right buffs
+
+            //read file untill end
+            while (!feof(infile))
+            {
+                // Increment Number of frames
+                count++;
+
+                // Reading data in chunks of BUFFSIZE
+                nb = fread(buff,1,frameSize_in,infile);
+                
+                //send left and right channels to respective buffers, nb is bytes so /2 to get short ints
+                // if (sampsWritten < LENG_MAX)...
+                for(int i = 0; i < nb/2; i+=2){
+                    left_in[sampsWritten] = buff[i];
+                    right_in[sampsWritten] = buff[i + 1];
+
+                    sampsWritten++;
+                }
+            }
+            
+            err_code = 0;
+
+            cudaMemcpy(d_left_in, left_in, sizeof(short int) * audio_leng, cudaMemcpyHostToDevice);
+            cudaMemcpy(d_right_in, right_in, sizeof(short int) * audio_leng, cudaMemcpyHostToDevice);
+
+        }
 	}
+
+    return err_code; 
 }
 
+void writeERR(char err_code){
+    cout << "error: " << (short int)err_code << endl; // cast because char wasnt showing
+
+    if (err_code == 1){
+        const char *str = "Incorrect format this program requires 16 bit, stereo, PCM, wav.";
+        fwrite(str,1, sizeof(char) * 64, outfile);
+    } else if (err_code == 2){
+        const char *str = "There is a problem with the file, it is either not a wav file or it has been corrupted.";
+        fwrite(str,1, sizeof(char) * 87, outfile);
+    } else {
+        const char *str = "Undefined error, please double check the file you are uploading.";
+        fwrite(str,1, sizeof(char) * 64, outfile);
+    }
+}
 
 int main(void){
     cout << "runing digest alg. waiting for ticket...\n";
 
     while(true){
+        //look for new ticket
         int cnt = selectInt("SELECT COUNT(username) AS cnt FROM ticketTable WHERE ready = 0", "cnt");
 
+        //if ticket exists...
         if (cnt > 0){
             string username;
-            username = selectString("SELECT username FROM ticketTable WHERE ready = 0 LIMIT 1", "username");
+            username = selectString("SELECT username FROM ticketTable WHERE ready = 0 LIMIT 1", "username"); //get top ticket from pile
             
             cout << "converting file for user: " << username << endl << endl;
 
             string inPath = "/etc/venue_modelling/digest/in/" + username ;
-            string tempPath = "/etc/venue_modelling/digest/temp/" + username + ".vis.wav";
-            string outPath = "/etc/venue_modelling/digest/out/" + username + ".vis.wav";
+            string tempPath = "/etc/venue_modelling/digest/temp/" + username + ".vwav";
+            string outPath = "/etc/venue_modelling/digest/out/" + username + ".vwav";
 
             infile = fopen(inPath.data(),"rb"); // Open wave file in read mode
-            outfile = fopen(tempPath.data(),"wb"); // Create output file in write mode
 
-            //initialise params rooms co-ords and speaker position 
-            init(username);
-            //read file contents and add to input buffers
-            readFile();
-            //process and write ouput of central point to wav
-            writeWav();
-            //process, do visu calculations and write them to file
-            writeVisu();
+            //read file contents and add to input buffers, also check if input file returns good read
+            char status = readFile();
+
+            if (status == 0){
+                outfile = fopen(tempPath.data(),"wb"); // Create output file in write mode
+
+                //initialise params rooms co-ords and speaker position 
+                init(username);
+                //process and write ouput of central point to wav
+                writeWav();
+                //process, do visu calculations and write them to file
+                writeVisu();
+
+                //send ready file to output folder
+                rename(tempPath.data(), outPath.data());
+
+                cout << "completed processing for " + username + "\n";
+            } else {
+
+                string outPath = "/etc/venue_modelling/digest/out/" + username + "_err" + ".txt";
+                outfile = fopen(outPath.data(),"wb"); // Create output file in write mode
+                writeERR(status);
+            }
             
             delete [] roomArr;
             delete [] data_size;
@@ -739,17 +796,12 @@ int main(void){
             fclose(infile);
             fclose(outfile);
 
-            //send ready file to output folder
-            rename(tempPath.data(), outPath.data());
+            //set ticket to ready
+            ticketReady(username);
 
             //delete input file
             string path = "/etc/venue_modelling/digest/in/" + username;
             unlink(path.c_str());
-
-            //set ticket to ready
-            ticketReady(username); 
-
-            cout << "completed processing for " + username + "\n";
         }
 
         sleep_for(seconds(5));

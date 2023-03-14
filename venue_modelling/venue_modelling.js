@@ -213,11 +213,12 @@ app.get('/:username/has_ticket', (req, res) => {
 app.get('/:username/file_check', (req, res) => {
     //check out/ folder for file by username
     let username = req.params.username;
-    let path = `/etc/venue_modelling/digest/out/${username}.vis.wav`;
+    let path = `/etc/venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `/etc/venue_modelling/digest/out/${username}_err.txt`;
 
     try {
-        if (fs.existsSync(path)) {
-            //file exists
+        if (fs.existsSync(path) | fs.existsSync(err_path)) {
+            //a file exists
             res.write('1');
         } else {
             res.write('0');
@@ -231,7 +232,12 @@ app.get('/:username/file_check', (req, res) => {
 
 app.get('/:username/download', (req, res) => {
     let username = req.params.username;
-    let path = `/etc/venue_modelling/digest/out/${username}.vis.wav`;
+    let path = `/etc/venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `/etc/venue_modelling/digest/out/${username}_err.txt`;
+
+    if (fs.existsSync(err_path)) {
+        path = err_path;
+    }
 
     try {
         console.log(`sending to ${username}`);
@@ -250,7 +256,7 @@ app.get('/:username/download', (req, res) => {
                     }
                 });
 
-                //delete file after it has been sent to user and ticekt has been deleted
+                //delete file after it has been sent to user and ticket has been deleted
                 fs.unlink(path, (err) => {
                     if (err) {
                         console.log(err);
