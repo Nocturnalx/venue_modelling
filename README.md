@@ -105,7 +105,9 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 ## Extra
 
     You might also want to install nodemon which will allow you to view console.log outputs which is what the nm_start.sh script uses.
+
     ```
     sudo npm install -g nodemon
     ```
+    
     If you do use nodemon for the node server, if you are developing/debugging etc., then to start the digest algorithm simply open a new terminal and type `sudo vmd`.
