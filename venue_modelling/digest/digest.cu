@@ -1,16 +1,11 @@
-#include <iostream>
-#include <string.h>
-#include <stdio.h>
-#include <fstream>
-#include <chrono>
-#include <thread>
-#include <stdlib.h>
-#include <bitset>
-#include <cmath>
-#include <math.h>
-#include <assert.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include <iostream> //need
+#include <string.h> //need
+#include <fstream> //need
+#include <chrono> //need
+#include <thread> //need
+
+#include <cuda.h> //need
+#include <cuda_runtime.h> //need
 
 #include "mysql_connection.h"
 
@@ -233,7 +228,7 @@ void ticketReady(string username){
         /* Create a connection */
         driver = get_driver_instance();
         con = driver->connect("tcp://127.0.0.1:3306", "webuser", "webuser");
-        /* Connect to the MySQL test database */
+        /* Connect to the MySQL database */
         con->setSchema("venmodDB");
 
         stmt = con->createStatement();
@@ -244,11 +239,15 @@ void ticketReady(string username){
         delete con;
 
     } catch (sql::SQLException &e) {
-        cout << "# ERR: SQLException in " << __FILE__;
-        cout << " (" << __FUNCTION__ << ") on line " << __LINE__ << endl;
-        cout << "# ERR: " << e.what();
-        cout << " (MySQL error code: " << e.getErrorCode();
-        cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        
+        //unholy behaivour :O - this always gives err 0 as no data gets returned so this is what it is
+        if (e.getErrorCode() != 0){
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << " (" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
     }
 }
 
