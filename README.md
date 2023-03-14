@@ -110,11 +110,11 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 ## Setup
 
 1. 
-    Once all previous steps have been completed, use `bash install.sh` to install necesary local npm packages, setup the nginx proxy and firewall rules, create functional directories, and compile the digest algorithm and send it to /bin/. 
+    Once all previous steps have been completed, use `./install.sh` to install necesary local npm packages, setup the nginx proxy and firewall rules, create functional directories, and compile the digest algorithm and send it to /bin/. 
 
 2. 
-    You can then use `bash start.sh` to use pm2 to run the node.js webserver and the digest algorith as background processes.
-    `bash restart.sh` will restart the pm2 processes and `bash stop.sh` will stop and delete the pm2 processes.
+    You can then use `./start.sh` to use pm2 to run the node.js webserver and the digest algorith as background processes.
+    `./restart.sh` will restart the pm2 processes and `./stop.sh` will stop and delete the pm2 processes.
 
 
 
@@ -129,7 +129,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     If you do use nodemon for the node server, if you are developing/debugging etc., then to start the digest algorithm simply open a new terminal and type `sudo vmd`.
 
 2. 
-    To delete /bin/vmd, /etc/venue_modelling, and reset nginx to defaults use `bash uninstall.sh` however, you should remember to remove the ufw firewall rules as well as use `bash stop.sh` to stop pm2 processes. 
+    To delete /bin/vmd, /etc/venue_modelling, and reset nginx to defaults use `./uninstall.sh` however, you should remember to remove the ufw firewall rules as well as use `./stop.sh` to stop pm2 processes. 
 
     Once that has been done you can delete the cloned repository and all will have been cleansed.
 
