@@ -186,7 +186,8 @@ function upload(){
             let uploadComplete = parseInt(xmlHttp.responseText);
             if (uploadComplete){
                 alert('You are now in the queue! Every 20 seconds, while this browser is open, it will check to see if your file has been converted, you can leave now and log back in at a later point to check for your file.');
-                uploadCheck();
+                document.getElementById('uploadInputDiv').style.display = 'none';
+                fileCheck();
             } else {
                 alert('you already have a ticket waiting for processing');
             }
@@ -205,7 +206,8 @@ function uploadCheck(){
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
             let response = parseInt(xmlHttp.responseText);
             if (response){
-                document.getElementById('uploadFileInput').style.display = 'none';
+                alert("Still in queue!");
+                document.getElementById('uploadInputDiv').style.display = 'none';
                 fileCheck();
             }
         } 
@@ -248,7 +250,7 @@ function sendCheck(){
                 btn.addEventListener('click', function(){
                     window.open(`/${username}/download`, '_blank');
                     this.remove();
-                    document.getElementById('fileInputDiv').style.display = 'inline-block';
+                    document.getElementById('uploadInputDiv').style.display = 'inline-block';
                 });
 
                 div.appendChild(btn);
