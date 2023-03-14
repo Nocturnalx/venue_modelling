@@ -29,7 +29,7 @@ FILE * infile; // Open wave file in read mode
 FILE * outfile; // Create output ( wave format) file in write mode
 
 int audio_leng;
-int sampleRate = 44100; //could be changed but for now sample rate stays hard coded for 41000
+int sampleRate; //could be changed but for now sample rate stays hard coded for 41000
 int nb;	// variable storing number of bytes returned
 int * data_size;
 
@@ -67,6 +67,7 @@ int xLength;
 int yLength;
 int zLength;
 int points;
+int gain;
 
 struct point{
     int x;
@@ -291,6 +292,8 @@ void init(string username){
 
     cout << "rooms: " << rooms << endl;
 
+    gain = ceil(((rooms_x*coefs_x.neg*coefs_x.pos)+(rooms_y*coefs_y.neg*coefs_y.pos)+(rooms_y*coefs_y.neg*coefs_y.pos))/3);
+
     //calculate total abs coeffs and check if room is mirrored
     int r = 0;
     for(int y = 0; y < rooms_y; y++){
@@ -450,7 +453,7 @@ void process(int x, int y, int z, short int * monoBuff, short int * d_monoBuff){
         // Executing kernel 
         int block_size = 256;
         int grid_size = ((audio_leng + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
-        combine<<<grid_size,block_size>>>(d_monoBuff, d_left_in, d_right_in, roomArr[r].totalAbs / order, delay_L_samp, delay_R_samp, audio_leng);
+        combine<<<grid_size,block_size>>>(d_monoBuff, d_left_in, d_right_in, roomArr[r].totalAbs / gain, delay_L_samp, delay_R_samp, audio_leng);
     }
 
     cudaMemcpy(monoBuff, d_monoBuff, sizeof(short int) * audio_leng, cudaMemcpyDeviceToHost);
@@ -638,6 +641,7 @@ void readFile(){
 
 		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
 		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
+        sampleRate = meta->sample_rate;
 
         //for file read
         char readingData = 0;
