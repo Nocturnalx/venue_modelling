@@ -1,11 +1,11 @@
-#include <iostream> //need
-#include <string.h> //need
-#include <fstream> //need
-#include <chrono> //need
-#include <thread> //need
+#include <iostream>
+#include <string.h> 
+#include <fstream> 
+#include <chrono>
+#include <thread> 
 
-#include <cuda.h> //need
-#include <cuda_runtime.h> //need
+#include <cuda.h>
+#include <cuda_runtime.h> 
 
 #include "mysql_connection.h"
 
@@ -13,7 +13,6 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
-//includes need cleaning up
 
 using namespace std;
 using namespace std::this_thread; // sleep_for, sleep_until
@@ -54,7 +53,7 @@ typedef struct header_file
 
 typedef struct header_file* header_p;
 
-int frameSize_out = 2000;
+int frameSize_out;
 
 // ##room simulation vars##
 int resolution; //if resolution was 100 then it would be per cm
@@ -641,6 +640,7 @@ void readFile(){
 		cout << "Size of Header file is "<<sizeof(*meta)<<" bytes" << endl;
 		cout << "Sampling rate of the input wave file is "<< meta->sample_rate <<" Hz" << endl;
         sampleRate = meta->sample_rate;
+        frameSize_out = sampleRate/20;
 
         //for file read
         char readingData = 0;
@@ -668,8 +668,9 @@ void readFile(){
         fread(data_size, 1, sizeof(int), infile);
         audio_leng = data_size[0]/4; //leng in samples: /2 to get short int then /2 to split stereo channels
         // data_size[0] = data_size[0]/2; //half data size if writing mono (currently writing stereo but left and right are equal)
-
-        cout << "data size: " << audio_leng << endl;
+        
+        cout << "data size: " << data_size[0] << endl;
+        cout << "audio_leng: " << audio_leng << endl;
 
         left_in = new short int [audio_leng];
         right_in = new short int [audio_leng];
