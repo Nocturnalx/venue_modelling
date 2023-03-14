@@ -480,22 +480,13 @@ void writeWav(){
     //fills combined mono buff with calcualted audio values
     process(x, y, z, monoBuff, d_monoBuff);
 
-    //begin writing output data and do xcor
-
     //write dataSize to file
+    data_size[0] = data_size[0]/2; //half data size if writing mono
     fwrite(data_size, 1, sizeof(int), outfile);
 
-    //here wav file could be reconstructed (i dont know why its *4 think it should be *2 but 4 works so ???????)
-    short int * out;
-    out = new short int[audio_leng*4];
-    for (int i = 0; i < audio_leng; i++){
-        out[i*2] = monoBuff[i];
-        out[(i*2) + 1] = monoBuff[i];
-    }
+    //write audio, doing mono means output audio is just monobuff
+    fwrite(monoBuff,1,audio_leng*2,outfile);
 
-    fwrite(out,1,audio_leng*4,outfile);
-
-    delete [] out;
     delete [] monoBuff;
     //cuda free device memory used
     cudaFree(d_monoBuff);
@@ -628,7 +619,7 @@ void readFile(){
 	if (infile)
 	{
 		fread(meta, 1, sizeof(header), infile);
-        // meta->num_channels = 1; //change for mono
+        meta->num_channels = 1; //change for mono
 		fwrite(meta,1, sizeof(*meta), outfile);
 
         //testing - prints WAVE
@@ -667,9 +658,7 @@ void readFile(){
         //read next 4 bytes which is data size
         fread(data_size, 1, sizeof(int), infile);
         audio_leng = data_size[0]/4; //leng in samples: /2 to get short int then /2 to split stereo channels
-        // data_size[0] = data_size[0]/2; //half data size if writing mono (currently writing stereo but left and right are equal)
         
-        cout << "data size: " << data_size[0] << endl;
         cout << "audio_leng: " << audio_leng << endl;
 
         left_in = new short int [audio_leng];
