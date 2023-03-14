@@ -1,1 +1,0 @@
-nvcc digest/digest.cu -o digest/digest -I/usr/include/cppconn -L/usr/lib -lmysqlcppconn
