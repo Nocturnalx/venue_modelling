@@ -393,8 +393,7 @@ __global__ void combine(short int *d_monoBuff, short int *d_left_in, short int *
         //if larger than delay start reading the audio
         if (tid >= delay_l){
             sample_l = d_left_in[tid - delay_l];
-            sample_l *= abs; // sbsorption loss
-            sample_l = sample_l / 4; //uniform gain reduction for all audio to stop clipping
+            sample_l *= abs; // absorption loss
             sample_l = sample_l / 2; //average of both audio streams for combining to mono
         }
         d_monoBuff[tid] += sample_l; 
@@ -404,7 +403,6 @@ __global__ void combine(short int *d_monoBuff, short int *d_left_in, short int *
         if (tid >= delay_r){
             sample_r = d_right_in[tid - delay_r];
             sample_r = sample_r * abs; // absorption loss
-            sample_r = sample_r / 4; //uniform gain reduction for all audio to stop clipping
             sample_r = sample_r / 2; //average of both audio streams for combining to mono
         }
         d_monoBuff[tid] += sample_r; 
@@ -452,7 +450,7 @@ void process(int x, int y, int z, short int * monoBuff, short int * d_monoBuff){
         // Executing kernel 
         int block_size = 256;
         int grid_size = ((audio_leng + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
-        combine<<<grid_size,block_size>>>(d_monoBuff, d_left_in, d_right_in, roomArr[r].totalAbs, delay_L_samp, delay_R_samp, audio_leng);
+        combine<<<grid_size,block_size>>>(d_monoBuff, d_left_in, d_right_in, roomArr[r].totalAbs / order, delay_L_samp, delay_R_samp, audio_leng);
     }
 
     cudaMemcpy(monoBuff, d_monoBuff, sizeof(short int) * audio_leng, cudaMemcpyDeviceToHost);
@@ -721,9 +719,9 @@ int main(void){
             
             cout << "converting file for user: " << username << endl << endl;
 
-            string inPath = "in/" + username ;
-            string tempPath = "temp/" + username + ".vis.wav";
-            string outPath = "out/" + username + ".vis.wav";
+            string inPath = "/etc/venue_modelling/digest/in/" + username ;
+            string tempPath = "/etc/venue_modelling/digest/temp/" + username + ".vis.wav";
+            string outPath = "/etc/venue_modelling/digest/out/" + username + ".vis.wav";
 
             infile = fopen(inPath.data(),"rb"); // Open wave file in read mode
             outfile = fopen(tempPath.data(),"wb"); // Create output file in write mode
@@ -752,7 +750,7 @@ int main(void){
             rename(tempPath.data(), outPath.data());
 
             //delete input file
-            string path = "in/" + username;
+            string path = "/etc/venue_modelling/digest/in/" + username;
             unlink(path.c_str());
 
             //set ticket to ready

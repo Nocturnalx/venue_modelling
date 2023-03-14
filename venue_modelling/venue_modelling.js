@@ -7,7 +7,7 @@ const multer  = require('multer');
 
 var storage = multer.diskStorage(
     {
-        destination: 'digest/in',
+        destination: '/etc/venue_modelling/digest/in',
         filename: function ( req, file, cb ) {
             cb( null, req.params.username);
         }
@@ -213,7 +213,7 @@ app.get('/:username/has_ticket', (req, res) => {
 app.get('/:username/file_check', (req, res) => {
     //check out/ folder for file by username
     let username = req.params.username;
-    let path = `digest/out/${username}.vis.wav`;
+    let path = `/etc/venue_modelling/digest/out/${username}.vis.wav`;
 
     try {
         if (fs.existsSync(path)) {
@@ -231,13 +231,13 @@ app.get('/:username/file_check', (req, res) => {
 
 app.get('/:username/download', (req, res) => {
     let username = req.params.username;
-    let path = `/digest/out/${username}.vis.wav`;
+    let path = `/etc/venue_modelling/digest/out/${username}.vis.wav`;
 
     try {
         console.log(`sending to ${username}`);
 
         //send file to user
-        res.download(__dirname + path, (err) => {
+        res.download(path, (err) => {
             if(err) {
                 console.log(err);
             } else {
@@ -251,7 +251,7 @@ app.get('/:username/download', (req, res) => {
                 });
 
                 //delete file after it has been sent to user and ticekt has been deleted
-                fs.unlink(__dirname + path, (err) => {
+                fs.unlink(path, (err) => {
                     if (err) {
                         console.log(err);
                     } else {
