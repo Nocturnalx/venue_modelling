@@ -17,6 +17,8 @@ var lengCtx;
 
 var headerSize = 20;
 
+var playing = 0;
+
 function newFrame(){
     //top canvas
     let n = 0;
@@ -205,6 +207,8 @@ function newVisuFile(){
     visuFile = document.getElementById('playFileInput').files[0];
     let reader = new FileReader();
 
+    pauseVisu();
+
     reader.onload = function(){
         let data = reader.result;
         let intArr = new Uint8Array(data);
@@ -232,16 +236,23 @@ function newVisuFile(){
 
 var audio;
 function playVisu(){
-    audio = new Audio(URL.createObjectURL(visuFile));
+    if (!playing){
+        audio = new Audio(URL.createObjectURL(visuFile));
 
-    newFrame();
-    intervalID = setInterval(newFrame, frameLeng/(sampleRate/1000));
+        newFrame();
+        intervalID = setInterval(newFrame, frameLeng/(sampleRate/1000));
 
-    audio.play();
+        audio.play();
+
+        playing = 1;
+    }
 }
 
 function pauseVisu(){
-    audio.pause();
-    currentFrame = 0;
-    clearInterval(intervalID);
+    if (playing){
+        audio.pause();
+        currentFrame = 0;
+        clearInterval(intervalID);
+        playing = 0;
+    }
 }
