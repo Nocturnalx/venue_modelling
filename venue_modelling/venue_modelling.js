@@ -295,6 +295,15 @@ app.get('/main.js', (req, res) => {
     });
 });
 
+app.get('/vis.js', (req, res) => {
+    fs.readFile('resources/js/vis.js', function(err, data){
+        res.writeHead(200);
+
+        res.write(data);
+        return res.end();
+    });
+});
+
 app.get('/main.css', (req, res) => {
     fs.readFile('resources/css/main.css', function(err, data){
         res.writeHead(200);
