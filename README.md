@@ -2,6 +2,7 @@
 
 ## Pre-requisites
 ***This project requires a cuda compatible GPU***
+
 *It also assumes you are installing on an ubuntu pc/server*
 
 Download/clone git repository.
@@ -22,6 +23,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     ```
 
 2. Set up database.
+
     Log into server with `mysql -u root -p` and give password when prompted.
 
     Setup DB and tables:
@@ -85,9 +87,6 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     sudo npm install -g pm2
     ```
 
-    You might also want to install nodemon which will allow you to view console.log outputs `sudo npm install -g nodemon` that is what the nm_start.sh script uses.
-
-
 ### nvcc compiler
 1. refer to https://developer.nvidia.com/cuda-downloads for instructions to download and install the cuda-toolkit. (ubuntu does have an apt repo for nvidia-cuda-toolkit however, it is known to cause driver mis-matches so use the outlined way on the nvidia website).
 
@@ -100,3 +99,13 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 2. 
     You can then use `bash start.sh` to use pm2 to run the node.js webserver and the digest algorith as background processes.
     `bash restart.sh` will restart the pm2 processes and `bash stop.sh` will stop and delete the pm2 processes.
+
+
+
+## Extra
+
+    You might also want to install nodemon which will allow you to view console.log outputs which is what the nm_start.sh script uses.
+    ```
+    sudo npm install -g nodemon
+    ```
+    If you do use nodemon for the node server, if you are developing/debugging etc., then to start the digest algorithm simply open a new terminal and type `sudo vmd`.
