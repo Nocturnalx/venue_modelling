@@ -18,10 +18,7 @@ var username;
 var loggedIn = false;
 var downloadReady = false;
 
-var xLeng_vis;
-var yLeng_vis;
-var zLeng_vis;
-
+//log in functions
 function newUser()
 {
     let input = document.getElementById('usernameInput');
@@ -85,6 +82,7 @@ function loginSucces(){
     uploadCheck();
 }
 
+//parameter functions
 function updateParameters(){
     //send maths parameters the user wants from the number inputs
 
@@ -173,6 +171,7 @@ function getParameters(){
     xmlHttp.send();
 }
 
+//file upload functions
 function upload(){
     //upload file from file input when upload button pressed
 

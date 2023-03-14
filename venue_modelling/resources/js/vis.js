@@ -19,6 +19,10 @@ var headerSize = 20;
 
 var playing = 0;
 
+var xLeng_vis;
+var yLeng_vis;
+var zLeng_vis;
+
 function newFrame(){
     //top canvas
     let n = 0;
