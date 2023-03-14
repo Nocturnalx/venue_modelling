@@ -127,3 +127,22 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     ```
 
     If you do use nodemon for the node server, if you are developing/debugging etc., then to start the digest algorithm simply open a new terminal and type `sudo vmd`.
+
+2. 
+    To delete /bin/vmd, /etc/venue_modelling, and reset nginx to defaults use `bash uninstall.sh` however, you should remember to remove the ufw firewall rules as well as use `bash stop.sh` to stop pm2 processes. 
+
+    Once that has been done you can delete the cloned repository and all will have been cleansed.
+
+    If you would like to remove all packages downloaded use:
+
+    ```
+    npm uninstall -g pm2
+    npm uninstall -g nodemon
+
+    sudo apt purge mariadb-server
+    sudo apt purge nginx 
+    sudo apt purge nodejs
+    sudo apt purge npm
+
+    sudo apt autoremove
+    ```
