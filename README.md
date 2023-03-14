@@ -90,6 +90,22 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 ### nvcc compiler
 1. refer to https://developer.nvidia.com/cuda-downloads for instructions to download and install the cuda-toolkit. (ubuntu does have an apt repo for nvidia-cuda-toolkit however, it is known to cause driver mis-matches so use the outlined way on the nvidia website).
 
+You may also have to add nvcc to your path environment.
+
+Open:
+
+```
+nano /home/$USER/.bashrc
+```
+
+Inside there add the following: (replace cuda-8.0 with your version):
+
+```
+export PATH="/usr/local/cuda-8.0/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH"
+```
+
+Now either do `source .bashrc` or close and open another terminal.
 
 ## Setup
 
