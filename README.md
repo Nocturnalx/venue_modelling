@@ -1,6 +1,8 @@
-# set up guide
+# Set up guide
 
 ## Pre-requisites
+***This project requires a cuda compatible GPU***
+*It also assumes you are installing on an ubuntu pc/server*
 
 Download/clone git repository.
 
@@ -23,6 +25,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     Log into server with `mysql -u root -p` and give password when prompted.
 
     Setup DB and tables:
+
     ```
     CREATE DATABASE venmodDB;
 
@@ -74,48 +77,26 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     sudo apt install npm
     ```
 
-2. Setup nginx reverse proxy.
+2. Set up global node packages.
 
-    You can use `bash setup/nginx_setup.sh` but if that doesnt work or you want to be more careful with what you are doing use the following:
+    To use the default start.sh script and run processes as background tasks install pm2 using the following command:
+
     ```
-    sudo rm /etc/nginx/sites-enabled/default
-    sudo cp node.conf /etc/nginx/sites-available
-    sudo ln -s /etc/nginx/sites-available/node.conf /etc/nginx/sites-enabled/
-    sudo nginx -t
-    sudo systemctl restart nginx
-    sudo ufw allow 80
-    sudo ufw allow 443
+    sudo npm install -g pm2
     ```
 
-3. Set up node packages.
-
-    ***Make sure you are in the same folder as venue_modelling.js and run.sh***
-    ```
-    npm install express
-    npm install multer
-    npm install mysql
-    npm install body-parser
-    npm install -g nodemon
-    ```
+    You might also want to install nodemon which will allow you to view console.log outputs `sudo npm install -g nodemon` that is what the nm_start.sh script uses.
 
 
+### nvcc compiler
+1. refer to https://developer.nvidia.com/cuda-downloads for instructions to download and install the cuda-toolkit. (ubuntu does have an apt repo for nvidia-cuda-toolkit however, it is known to cause driver mis-matches so use the outlined way on the nvidia website).
 
-## setup
+
+## Setup
 
 1. 
-    If you have a cuda-compatible gpu in your system use:
-
-    ```
-    bash setup/compile.sh
-    ```
-
-    Otherwise use the sequential version of the digest algorithm:
-
-    ```
-    bash setup/seq_compile.sh
-    ```
+    Once all previous steps have been completed, use `bash install.sh` to install necesary local npm packages, setup the nginx proxy and firewall rules, create functional directories, and compile the digest algorithm and send it to /bin/. 
 
 2. 
-    You can then use `bash node_start.sh` to run the node.js web server with nodemon and bash `bash digest_start.sh` to start the digest algorithm.
-
-    To run the servers as detatched processes you can install *screen* with `sudo apt install screen` and run each command in a new screen instance.
+    You can then use `bash start.sh` to use pm2 to run the node.js webserver and the digest algorith as background processes.
+    `bash restart.sh` will restart the pm2 processes and `bash stop.sh` will stop and delete the pm2 processes.
