@@ -319,6 +319,19 @@ app.get('/main.css', (req, res) => {
     });
 });
 
+app.get('/icon.png', (req, res) => {
+    req.on('error', function(err){
+        callback(err);
+    });
+    
+    fs.readFile('resources/icon/icon.png', function(err, data){
+        res.writeHead(200, {'Content-Type': 'image/png'});
+
+        res.write(data);
+        return res.end();
+    });
+});
+
 //server listen
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
