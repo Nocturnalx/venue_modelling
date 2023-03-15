@@ -755,9 +755,9 @@ int main(void){
             
             cout << "converting file for user: " << username << endl << endl;
 
-            string inPath = "/etc/venue_modelling/digest/in/" + username ;
-            string tempPath = "/etc/venue_modelling/digest/temp/" + username + ".vwav";
-            string outPath = "/etc/venue_modelling/digest/out/" + username + ".vwav";
+            string inPath = "/var/venue_modelling/digest/in/" + username ;
+            string tempPath = "/var/venue_modelling/digest/temp/" + username + ".vwav";
+            string outPath = "/var/venue_modelling/digest/out/" + username + ".vwav";
 
             infile = fopen(inPath.data(),"rb"); // Open wave file in read mode
 
@@ -780,7 +780,7 @@ int main(void){
                 cout << "completed processing for " + username + "\n";
             } else {
 
-                string outPath = "/etc/venue_modelling/digest/out/" + username + "_err" + ".txt";
+                string outPath = "/var/venue_modelling/digest/out/" + username + "_err" + ".txt";
                 outfile = fopen(outPath.data(),"wb"); // Create output file in write mode
                 writeERR(status);
             }
@@ -800,7 +800,7 @@ int main(void){
             ticketReady(username);
 
             //delete input file
-            string path = "/etc/venue_modelling/digest/in/" + username;
+            string path = "/var/venue_modelling/digest/in/" + username;
             unlink(path.c_str());
         }
 

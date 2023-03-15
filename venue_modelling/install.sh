@@ -21,12 +21,12 @@ sudo ufw allow 80
 sudo ufw allow 443
 
 echo ""
-echo "creating /etc/venue_modeling directory"
-sudo mkdir -p /etc/venue_modelling/digest/in
-sudo mkdir /etc/venue_modelling/digest/out
-sudo mkdir /etc/venue_modelling/digest/temp
+echo "creating /var/venue_modeling directory"
+sudo mkdir -p /var/venue_modelling/digest/in
+sudo mkdir /var/venue_modelling/digest/out
+sudo mkdir /var/venue_modelling/digest/temp
 
-sudo cp uninstall.sh /etc/venue_modelling
+sudo cp uninstall.sh /var/venue_modelling
 
 echo ""
 echo "compiling"

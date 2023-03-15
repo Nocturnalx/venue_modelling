@@ -7,7 +7,7 @@ const multer  = require('multer');
 
 var storage = multer.diskStorage(
     {
-        destination: '/etc/venue_modelling/digest/in',
+        destination: '/var/venue_modelling/digest/in',
         filename: function ( req, file, cb ) {
             cb( null, req.params.username);
         }
@@ -213,8 +213,8 @@ app.get('/:username/has_ticket', (req, res) => {
 app.get('/:username/file_check', (req, res) => {
     //check out/ folder for file by username
     let username = req.params.username;
-    let path = `/etc/venue_modelling/digest/out/${username}.vwav`;
-    let err_path = `/etc/venue_modelling/digest/out/${username}_err.txt`;
+    let path = `/var/venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `/var/venue_modelling/digest/out/${username}_err.txt`;
 
     try {
         if (fs.existsSync(path) | fs.existsSync(err_path)) {
@@ -232,8 +232,8 @@ app.get('/:username/file_check', (req, res) => {
 
 app.get('/:username/download', (req, res) => {
     let username = req.params.username;
-    let path = `/etc/venue_modelling/digest/out/${username}.vwav`;
-    let err_path = `/etc/venue_modelling/digest/out/${username}_err.txt`;
+    let path = `/var/venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `/var/venue_modelling/digest/out/${username}_err.txt`;
 
     if (fs.existsSync(err_path)) {
         path = err_path;

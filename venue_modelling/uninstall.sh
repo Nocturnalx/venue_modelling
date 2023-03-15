@@ -1,5 +1,5 @@
-echo "deleting /etc/venue_modelling"
-sudo rm -r /etc/venue_modelling
+echo "deleting /var/venue_modelling"
+sudo rm -r /var/venue_modelling
 
 echo ""
 echo "deleting /bin/vmd"
