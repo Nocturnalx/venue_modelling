@@ -206,7 +206,6 @@ function uploadCheck(){
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
             let response = parseInt(xmlHttp.responseText);
             if (response){
-                alert("Still in queue!");
                 document.getElementById('uploadInputDiv').style.display = 'none';
                 fileCheck();
             }
@@ -222,7 +221,7 @@ function fileCheck(){
     console.log('checking for output file every 20s');
 
     sendCheck();
-    const fcInterval = setInterval(() => {
+    fcInterval = setInterval(() => {
         if (!downloadReady){
             sendCheck();
         } else {
