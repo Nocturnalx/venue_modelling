@@ -57,6 +57,7 @@ function newFrame(){
     currentFrame++;
     if (currentFrame >= frameCount){
         currentFrame = 0;
+        playing = 0;
         clearInterval(intervalID);
     }
 }
@@ -105,9 +106,8 @@ function loadVisualiser(headerArr, visData){
             let index = visData[f + (p*frameCount)];
             pointArr[p] = index;
         }
-        // indexArr[f] = pointArr;
 
-        let topPoints = [topArea]
+        let topPoints = [topArea];
         let breadthPoints = [breadthArea];
         let lengthPoints = [lengthArea];
 
@@ -130,7 +130,6 @@ function loadVisualiser(headerArr, visData){
                 val += Math.abs(Math.floor((pointArr[i + (y * xLeng_vis)]) / yLeng_vis));
             }
             topPoints[i] = getHSL(val);
-            // topPoints[i] = val;
         }
         topFrames.push(topPoints);
         
@@ -141,7 +140,6 @@ function loadVisualiser(headerArr, visData){
                 val += Math.abs(Math.floor((pointArr[i + (z * xLeng_vis * yLeng_vis)]) / zLeng_vis));
             }
             breadthPoints[i] = getHSL(val);
-            // breadthPoints[i] = val;
         }
         breadthFrames.push(breadthPoints);
         
@@ -152,7 +150,6 @@ function loadVisualiser(headerArr, visData){
                 val += Math.abs(Math.floor((pointArr[i + x]) / xLeng_vis));
             }
             lengthPoints[i] = getHSL(val);
-            // lengthPoints[i] = val;
         }
         lengthFrames.push(lengthPoints);
     }
