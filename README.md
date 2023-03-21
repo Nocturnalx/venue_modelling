@@ -129,7 +129,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     If you do use nodemon for the node server, if you are developing/debugging etc., then to start the digest algorithm simply open a new terminal and type `sudo vmd`.
 
 2. 
-    To delete /bin/vmd, /etc/venue_modelling, and reset nginx to defaults use `./uninstall.sh` however, you should remember to remove the ufw firewall rules as well as use `./stop.sh` to stop pm2 processes. 
+    To delete /bin/vmd, /var/venue_modelling, and reset nginx to defaults use `./uninstall.sh` however, you should remember to remove the ufw firewall rules as well as use `./stop.sh` to stop pm2 processes. 
 
     Once that has been done you can delete the cloned repository and all will have been cleansed.
 
