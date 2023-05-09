@@ -44,13 +44,15 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
         zNeg FLOAT,
         zPos FLOAT,
         xNeg FLOAT,
-        xPos FLOAT
+        xPos FLOAT,
+        PRIMARY KEY (userID)
     );
 
-    CREATE TABLE userTable(
+    CREATE TABLE ticketTable(
         ticketID INT NOT NULL AUTO_INCREMENT,
         username varchar(20),
-        ready TINYINT DEFAULT 0
+        ready TINYINT DEFAULT 0,
+        PRIMARY KEY (ticketID)
     );
     ```
 
