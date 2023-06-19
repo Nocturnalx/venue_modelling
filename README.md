@@ -32,7 +32,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     CREATE DATABASE venmodDB;
 
     CREATE TABLE userTable(
-        userID INT NOT NULL AUTO_INCREMENT,
+        userID INT NOT NULL,
         username varchar(20),
         xLength INT,
         yLength INT,
@@ -49,7 +49,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     );
 
     CREATE TABLE ticketTable(
-        ticketID INT NOT NULL AUTO_INCREMENT,
+        ticketID INT NOT NULL,
         username varchar(20),
         ready TINYINT DEFAULT 0,
         PRIMARY KEY (ticketID)
