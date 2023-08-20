@@ -138,13 +138,8 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     If you would like to remove all packages downloaded use:
 
     ```
-    npm uninstall -g pm2
-    npm uninstall -g nodemon
-
-    sudo apt purge mariadb-server
-    sudo apt purge nginx 
-    sudo apt purge nodejs
-    sudo apt purge npm
-
+    npm uninstall -g pm2 nodemon
+    
+    sudo apt purge mariadb-server nginx nodejs npm
     sudo apt autoremove
     ```
