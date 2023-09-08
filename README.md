@@ -69,7 +69,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
     GRANT SELECT, INSERT, UPDATE ON venmodDB.userTable TO 'webuser'@'localhost'; 
     GRANT SELECT, INSERT, UPDATE, DELETE ON venmodDB.ticketTable TO 'webuser'@'localhost';
 
-    FLUSH PRIVILEDGES;
+    FLUSH PRIVILEGES;
     ```
 
 
