@@ -12,3 +12,4 @@ venue_modelling/install/CPackSourceConfig.cmake
 venue_modelling/install/CTestTestfile.cmake
 venue_modelling/install/DartConfiguration.tcl
 venue_modelling/install/Makefile
+venue_modelling/install/vmd
