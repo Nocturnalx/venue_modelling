@@ -5,9 +5,11 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const multer  = require('multer');
 
+const homeDir = require('os').homedir();
+
 var storage = multer.diskStorage(
     {
-        destination: '/var/venue_modelling/digest/in',
+        destination: `${homeDir}/.venue_modelling/digest/in`,
         filename: function ( req, file, cb ) {
             cb( null, req.params.username);
         }
@@ -213,8 +215,8 @@ app.get('/:username/has_ticket', (req, res) => {
 app.get('/:username/file_check', (req, res) => {
     //check out/ folder for file by username
     let username = req.params.username;
-    let path = `/var/venue_modelling/digest/out/${username}.vwav`;
-    let err_path = `/var/venue_modelling/digest/out/${username}_err.txt`;
+    let path = `${homeDir}/.venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `${homeDir}/.venue_modelling/digest/out/${username}_err.txt`;
 
     try {
         if (fs.existsSync(path) | fs.existsSync(err_path)) {
@@ -232,8 +234,8 @@ app.get('/:username/file_check', (req, res) => {
 
 app.get('/:username/download', (req, res) => {
     let username = req.params.username;
-    let path = `/var/venue_modelling/digest/out/${username}.vwav`;
-    let err_path = `/var/venue_modelling/digest/out/${username}_err.txt`;
+    let path = `${homeDir}/.venue_modelling/digest/out/${username}.vwav`;
+    let err_path = `${homeDir}/.venue_modelling/digest/out/${username}_err.txt`;
 
     if (fs.existsSync(err_path)) {
         path = err_path;
