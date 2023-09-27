@@ -1,5 +1,3 @@
-echo "deleting /var/venue_modelling"
-sudo rm -r /var/venue_modelling
 
 echo ""
 echo "deleting /bin/vmd"
@@ -15,3 +13,6 @@ sudo systemctl restart nginx
 
 echo ""
 echo "Remember to delete pm2 backgrond processes if not done already and remove firewall rules using ufw!"
+
+echo "deleting /var/venue_modelling"
+rm -r ~/.venue_modelling
