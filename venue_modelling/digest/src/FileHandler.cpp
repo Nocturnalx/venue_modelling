@@ -218,93 +218,93 @@ void FileHandler::writeVISUHeaders(std::unique_ptr<AudioProc> & AProc){
 }
 
 void FileHandler::writeVISU(std::unique_ptr<AudioProc> & AProc){
-    std::cout << "writing visualiser data\n";
+    // std::cout << "writing visualiser data\n";
 
-    writeVISUHeaders(AProc);
+    // writeVISUHeaders(AProc);
 
-    short int * d_src_monoBuff;
-    cudaMalloc((void**)&d_src_monoBuff, sizeof(short int) * audio_leng);
+    // short int * d_src_monoBuff;
+    // cudaMalloc((void**)&d_src_monoBuff, sizeof(short int) * audio_leng);
 
-    dimensions dims = AProc->getDimensions();
+    // dimensions dims = AProc->getDimensions();
 
-    int points = dims.xLength * dims.yLength * dims.zLength;
-    int pointNo = 0;
+    // int points = dims.xLength * dims.yLength * dims.zLength;
+    // int pointNo = 0;
 
-    for (int z = 0; z < dims.zLength; z++){
-        for (int y = 0; y < dims.yLength; y++){
-            for (int x = 0; x < dims.xLength; x++){
+    // for (int z = 0; z < dims.zLength; z++){
+    //     for (int y = 0; y < dims.yLength; y++){
+    //         for (int x = 0; x < dims.xLength; x++){
 
-                //fills combined mono buff with calcualted audio values
-                AProc->process(x, y, z);
+    //             //fills combined mono buff with calcualted audio values
+    //             AProc->process(x, y, z);
 
-                //~~below is all for xcorr~~    
+    //             //~~below is all for xcorr~~    
 
-                short int frameNo = 0;
-                float xcor = 0; //xcorr value
-                float numerator = 0;
-                float divisor = 0;
-                float src_sum = 0;
-                float res_sum = 0;
+    //             short int frameNo = 0;
+    //             float xcor = 0; //xcorr value
+    //             float numerator = 0;
+    //             float divisor = 0;
+    //             float src_sum = 0;
+    //             float res_sum = 0;
 
-                //delay audio for first sonic impact
+    //             //delay audio for first sonic impact
 
-                //dist to left
-                float dist_L = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(0));
-                //dist to right
-                float dist_R = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(1));
+    //             //dist to left
+    //             float dist_L = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(0));
+    //             //dist to right
+    //             float dist_R = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(1));
 
-                //time delays in samples
-                int delay_L_samp = (dist_L/343) * AProc->getSampleRate();
-                int delay_R_samp = (dist_R/343) * AProc->getSampleRate();
+    //             //time delays in samples
+    //             int delay_L_samp = (dist_L/343) * AProc->getSampleRate();
+    //             int delay_R_samp = (dist_R/343) * AProc->getSampleRate();
 
-                // Executing kernel 
-                int block_size = 256;
-                int grid_size = ((audio_leng + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
-                combine<<<grid_size,block_size>>>(d_src_monoBuff, d_left_in, d_right_in, 1, delay_L_samp, delay_R_samp, audio_leng); //reusing combine func for central virt room with abs=1
+    //             // Executing kernel 
+    //             int block_size = 256;
+    //             int grid_size = ((audio_leng + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
+    //             combine<<<grid_size,block_size>>>(d_src_monoBuff, d_left_in, d_right_in, 1, delay_L_samp, delay_R_samp, audio_leng); //reusing combine func for central virt room with abs=1
 
-                cudaMemcpy(src_monoBuff, d_src_monoBuff, sizeof(short int) * audio_leng, cudaMemcpyDeviceToHost);
+    //             cudaMemcpy(src_monoBuff, d_src_monoBuff, sizeof(short int) * audio_leng, cudaMemcpyDeviceToHost);
 
-                int n = 0; //point in xcorr frame
-                //split monobuff into 3 sec chunks and do cross corr on it vs combined source
-                for (int i = 0; i < audio_leng; i++){
+    //             int n = 0; //point in xcorr frame
+    //             //split monobuff into 3 sec chunks and do cross corr on it vs combined source
+    //             for (int i = 0; i < audio_leng; i++){
 
-                    //xcorr happens here
-                    numerator += src_monoBuff[i] * AProc->monoBuff[i];
+    //                 //xcorr happens here
+    //                 numerator += src_monoBuff[i] * AProc->monoBuff[i];
 
-                    src_sum += pow(src_monoBuff[i], 2);
-                    res_sum += pow(AProc->monoBuff[i], 2);
+    //                 src_sum += pow(src_monoBuff[i], 2);
+    //                 res_sum += pow(AProc->monoBuff[i], 2);
 
-                    if (n == AProc->getFrameSize()){
-                        divisor = sqrt(src_sum * res_sum);
+    //                 if (n == AProc->getFrameSize()){
+    //                     divisor = sqrt(src_sum * res_sum);
 
-                        xcor = numerator / divisor;
+    //                     xcor = numerator / divisor;
 
-                        short int out = xcor * 32767;
+    //                     short int out = xcor * 32767;
 
-                        // cout << "xcor: " << out << endl;
+    //                     // cout << "xcor: " << out << endl;
 
-                        //this will be add value to point array when doing gpu accel
-                        fwrite(&out, 1, 2, m_outfile);
+    //                     //this will be add value to point array when doing gpu accel
+    //                     fwrite(&out, 1, 2, m_outfile);
 
-                        numerator = 0;
-                        divisor = 0;
-                        xcor = 0;
-                        src_sum = 0;
-                        res_sum = 0;
-                        n = 0;
-                        frameNo++;
-                    }
+    //                     numerator = 0;
+    //                     divisor = 0;
+    //                     xcor = 0;
+    //                     src_sum = 0;
+    //                     res_sum = 0;
+    //                     n = 0;
+    //                     frameNo++;
+    //                 }
 
-                    n++;
-                }
+    //                 n++;
+    //             }
 
-                pointNo++;
-                std::cout << "Point No; " << pointNo << " of " << points << std::endl;
-            }
-        }
-    }
+    //             pointNo++;
+    //             std::cout << "Point No; " << pointNo << " of " << points << std::endl;
+    //         }
+    //     }
+    // }
 
-    delete [] src_monoBuff;
+    // delete [] src_monoBuff;
 }
 
 //move file from temp folder to output file

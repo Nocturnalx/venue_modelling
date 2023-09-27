@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "SQLUtils.h"
-#include "GPUKernels.cuh"
 
 struct point {
     int x;
