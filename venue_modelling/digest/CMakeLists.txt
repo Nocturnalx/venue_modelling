@@ -16,8 +16,7 @@ set( project_sources
    src/main.cpp
    src/AudioProc.cu
    src/AudioProcParent.cu
-   src/XCorrProc.cu
-   src/GPUKernels.cu
+   src/XCorrProcParent.cu
    src/FileHandler.cpp
    src/SQLUtils.cpp
 )
