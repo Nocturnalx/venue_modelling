@@ -9,8 +9,7 @@ enable_language(CUDA)
 
 message(STATUS "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
 
-include(CTest)
-enable_testing()
+# no testing 
 
 set( project_sources
    src/main.cpp
