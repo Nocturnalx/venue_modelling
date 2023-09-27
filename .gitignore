@@ -2,6 +2,13 @@ reports and research/~$e Davison Project Report 1.docx
 node_modules
 package-lock.json
 package.json
-venue_modelling/digest/misc/
-venue_modelling/digest/build/Testing
-venue_modelling/digest/build/
+
+venue_modelling/install/CMakeFiles/
+venue_modelling/install/Testing/
+venue_modelling/install/cmake_install.cmake
+venue_modelling/install/CMakeCache.txt
+venue_modelling/install/CPackConfig.cmake
+venue_modelling/install/CPackSourceConfig.cmake
+venue_modelling/install/CTestTestfile.cmake
+venue_modelling/install/DartConfiguration.tcl
+venue_modelling/install/Makefile
