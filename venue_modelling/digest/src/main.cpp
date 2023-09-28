@@ -30,16 +30,16 @@ int main(int argc, char** argv){
 
             std::cout << "converting file for user: " << username << std::endl << std::endl;
 
-            std::unique_ptr<AudioProc> AProc = std::make_unique<AudioProc>();
+            std::unique_ptr<SpatialProc> SProc = std::make_unique<SpatialProc>();
             std::unique_ptr<FileHandler> fileHandler = std::make_unique<FileHandler>(username);
 
-            AProc->init(username);
+            SProc->init(username);
 
-            read_err_codes err_code = fileHandler->readFile(AProc);
+            read_err_codes err_code = fileHandler->readFile(SProc);
 
             if (err_code == readSuccess){
-                fileHandler->writeWav(AProc);
-                // fileHandler->writeVISU(AProc);
+                fileHandler->writeWav(SProc);
+                fileHandler->writeVISU(SProc);
 
                 std::cout << "completed processing for " + username + "\n";
                 

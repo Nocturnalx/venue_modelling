@@ -23,9 +23,9 @@ FileHandler::~FileHandler(){
 
 }
 
-read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
+read_err_codes FileHandler::readFile(std::unique_ptr<SpatialProc> & SProc){
 
-    int frameSize_in = 16384;
+    int frameSize_in = 16384; // no of bytes read in at a time from file
     short int buff[16384];
 	int count = 0;						        // For counting number of frames in wave file.
 	m_meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
@@ -66,8 +66,8 @@ read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
 
         int sampleRate = m_meta->sample_rate;
         int frameSize = sampleRate/20;
-        AProc->setSampleRate(sampleRate);
-        AProc->setFrameSize(frameSize);
+        SProc->setSampleRate(sampleRate);
+        SProc->setFrameSize(frameSize);
 
         //for file read
         bool dataTagFound = false;
@@ -95,22 +95,22 @@ read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
             std::cout << "data found!\n";
 
             //read next 4 bytes which is data size
-            fread(&m_data_size, 1, sizeof(int), m_infile);
-            int audioLeng = m_data_size/4;
-            AProc->setAudioLeng(audioLeng); //leng in samples: /2 to get short int then /2 to split stereo channels
+            fread(&m_dataSize, 1, sizeof(int), m_infile);
+            int audioLeng = m_dataSize/4;
+            SProc->setAudioLeng(audioLeng); //leng in samples: /2 to get short int then /2 to split stereo channels
             
             std::cout << "audio leng: " << audioLeng << std::endl;
 
             //now audioleng is set we can allocate memory
-            AProc->hostMallocMono();    //allocate output buff on device and host
-            AProc->deviceMallocMono();
+            SProc->hostMallocMono();    //allocate output buff on device and host
+            SProc->deviceMallocMono();
 
-            AProc->hostMallocStereo();  //allocate buffers to read file into
-            AProc->deviceMallocStereo();    //allocate device buffers to copy into
+            SProc->hostMallocStereo();  //allocate buffers to read file into
+            SProc->deviceMallocStereo();    //allocate device buffers to copy into
 
             for (int i = 0; i < audioLeng; i++){
-                AProc->left_in[i] = 0;
-                AProc->right_in[i] = 0;
+                SProc->left_in[i] = 0;
+                SProc->right_in[i] = 0;
             }
 
             int sampsWritten = 0; //no samples (short int) written to left and right buffs
@@ -129,8 +129,8 @@ read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
                 //send left and right channels to respective buffers, numBytes is bytes so /2 to get short ints
                 // if (sampsWritten < LENG_MAX)...
                 for(int i = 0; i < numBytes/2; i+=2){
-                    AProc->left_in[sampsWritten] = buff[i];
-                    AProc->right_in[sampsWritten] = buff[i + 1];
+                    SProc->left_in[sampsWritten] = buff[i];
+                    SProc->right_in[sampsWritten] = buff[i + 1];
 
                     sampsWritten++;
                 }
@@ -138,12 +138,12 @@ read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
             
             err_code = readSuccess;
 
-            AProc->copyStereoToDevice(); //copies l+r in arrays to device arrays
+            SProc->copyStereoToDevice(); //copies l+r in arrays to device arrays
         }
 	}
 
     if (err_code == readSuccess){
-        AProc->fileRead = true;
+        SProc->fileRead = true;
     }
 
     //close and delete input file
@@ -160,11 +160,11 @@ read_err_codes FileHandler::readFile(std::unique_ptr<AudioProc> & AProc){
 }
 
 
-void FileHandler::writeWav(std::unique_ptr<AudioProc> & AProc){
+void FileHandler::writeWav(std::unique_ptr<SpatialProc> & SProc){
 
-    int audio_leng = AProc->getAudioLeng();
+    int audio_leng = SProc->getAudioLeng();
 
-    dimensions dims = AProc->getDimensions();
+    dimensions dims = SProc->getDimensions();
 
     int xLength = dims.xLength;
     int yLength = dims.yLength;
@@ -180,8 +180,8 @@ void FileHandler::writeWav(std::unique_ptr<AudioProc> & AProc){
     fwrite(dataTag, 1, 4, m_outfile);
 
     //write dataSize to file
-    int out_data_size = m_data_size/2; //half data size if writing mono
-    fwrite(&out_data_size, 1, sizeof(int), m_outfile);
+    int out_dataSize = m_dataSize/2; //half data size if writing mono
+    fwrite(&out_dataSize, 1, sizeof(int), m_outfile);
 
     //coords of a typical central audience listening location
     int x = xLength/2;
@@ -189,13 +189,13 @@ void FileHandler::writeWav(std::unique_ptr<AudioProc> & AProc){
     int z = (zLength/4) * 3;
 
     //fills combined mono buff with calcualted audio values
-    AProc->process(x, y, z);
+    SProc->process(x, y, z);
 
     //write audio, doing mono means output audio is just monobuff
-    fwrite(AProc->monoBuff, 1, audio_leng * 2, m_outfile);
+    fwrite(SProc->monoBuff, 1, audio_leng * 2, m_outfile);
 }
 
-void FileHandler::writeVISUHeaders(std::unique_ptr<AudioProc> & AProc){
+void FileHandler::writeVISUHeaders(std::unique_ptr<SpatialProc> & SProc){
     
     std::cout << "writing visu headers\n";
 
@@ -203,9 +203,9 @@ void FileHandler::writeVISUHeaders(std::unique_ptr<AudioProc> & AProc){
     char visuTag[4] = {'v', 'i', 's', 'u'};
     fwrite(visuTag, 1, 4, m_outfile);
 
-    dimensions dims = AProc->getDimensions();
-    int audioLeng = AProc->getAudioLeng();
-    int frameSize = AProc->getFrameSize();
+    dimensions dims = SProc->getDimensions();
+    int audioLeng = SProc->getAudioLeng();
+    int frameSize = SProc->getFrameSize();
 
     fwrite(&dims.xLength, 1, 4, m_outfile);
     fwrite(&dims.yLength, 1, 4, m_outfile);
@@ -217,94 +217,40 @@ void FileHandler::writeVISUHeaders(std::unique_ptr<AudioProc> & AProc){
     fwrite(indexTag, 1, 4, m_outfile);
 }
 
-void FileHandler::writeVISU(std::unique_ptr<AudioProc> & AProc){
-    // std::cout << "writing visualiser data\n";
+void FileHandler::writeVISU(std::unique_ptr<SpatialProc> & SProc){
+    std::cout << "writing visualiser data\n";
 
-    // writeVISUHeaders(AProc);
+    writeVISUHeaders(SProc);
 
-    // short int * d_src_monoBuff;
-    // cudaMalloc((void**)&d_src_monoBuff, sizeof(short int) * audio_leng);
+    std::unique_ptr<XCorrProc> XCProc = std::make_unique<XCorrProc>();
 
-    // dimensions dims = AProc->getDimensions();
+    //init mem buffers
+    XCProc->hostMallocSrc(SProc->getAudioLeng());
+    XCProc->deviceMallocSrc(SProc->getAudioLeng());
 
-    // int points = dims.xLength * dims.yLength * dims.zLength;
-    // int pointNo = 0;
+    dimensions dims = SProc->getDimensions();
 
-    // for (int z = 0; z < dims.zLength; z++){
-    //     for (int y = 0; y < dims.yLength; y++){
-    //         for (int x = 0; x < dims.xLength; x++){
+    int points = dims.xLength * dims.yLength * dims.zLength;
+    int pointNo = 0;
 
-    //             //fills combined mono buff with calcualted audio values
-    //             AProc->process(x, y, z);
+    for (int z = 0; z < dims.zLength; z++){
+        for (int y = 0; y < dims.yLength; y++){
+            for (int x = 0; x < dims.xLength; x++){
 
-    //             //~~below is all for xcorr~~    
+                //fills combined mono buff with calcualted audio values
+                SProc->process(x, y, z);
 
-    //             short int frameNo = 0;
-    //             float xcor = 0; //xcorr value
-    //             float numerator = 0;
-    //             float divisor = 0;
-    //             float src_sum = 0;
-    //             float res_sum = 0;
+                //calculate audio for first ray to use as reference for xcorr
+                XCProc->fillSourceBuffer(x, y, z, SProc);
 
-    //             //delay audio for first sonic impact
+                //do xcorr
+                XCProc->processXcorr(SProc, m_outfile);
 
-    //             //dist to left
-    //             float dist_L = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(0));
-    //             //dist to right
-    //             float dist_R = AProc->get_dist(x, y, z, AProc->getSpeakerPosition(1));
-
-    //             //time delays in samples
-    //             int delay_L_samp = (dist_L/343) * AProc->getSampleRate();
-    //             int delay_R_samp = (dist_R/343) * AProc->getSampleRate();
-
-    //             // Executing kernel 
-    //             int block_size = 256;
-    //             int grid_size = ((audio_leng + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
-    //             combine<<<grid_size,block_size>>>(d_src_monoBuff, d_left_in, d_right_in, 1, delay_L_samp, delay_R_samp, audio_leng); //reusing combine func for central virt room with abs=1
-
-    //             cudaMemcpy(src_monoBuff, d_src_monoBuff, sizeof(short int) * audio_leng, cudaMemcpyDeviceToHost);
-
-    //             int n = 0; //point in xcorr frame
-    //             //split monobuff into 3 sec chunks and do cross corr on it vs combined source
-    //             for (int i = 0; i < audio_leng; i++){
-
-    //                 //xcorr happens here
-    //                 numerator += src_monoBuff[i] * AProc->monoBuff[i];
-
-    //                 src_sum += pow(src_monoBuff[i], 2);
-    //                 res_sum += pow(AProc->monoBuff[i], 2);
-
-    //                 if (n == AProc->getFrameSize()){
-    //                     divisor = sqrt(src_sum * res_sum);
-
-    //                     xcor = numerator / divisor;
-
-    //                     short int out = xcor * 32767;
-
-    //                     // cout << "xcor: " << out << endl;
-
-    //                     //this will be add value to point array when doing gpu accel
-    //                     fwrite(&out, 1, 2, m_outfile);
-
-    //                     numerator = 0;
-    //                     divisor = 0;
-    //                     xcor = 0;
-    //                     src_sum = 0;
-    //                     res_sum = 0;
-    //                     n = 0;
-    //                     frameNo++;
-    //                 }
-
-    //                 n++;
-    //             }
-
-    //             pointNo++;
-    //             std::cout << "Point No; " << pointNo << " of " << points << std::endl;
-    //         }
-    //     }
-    // }
-
-    // delete [] src_monoBuff;
+                pointNo++;
+                std::cout << "Point No; " << pointNo << " of " << points << std::endl;
+            }
+        }
+    }
 }
 
 //move file from temp folder to output file

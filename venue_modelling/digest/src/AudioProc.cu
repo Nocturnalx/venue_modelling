@@ -30,11 +30,12 @@ __global__ void combine(short int *d_monoBuff, short int *d_left_in, short int *
     }
 }
 
-AudioProc::AudioProc(/* args */){
+//spatial processor
+SpatialProc::SpatialProc(/* args */){
 
 }
 
-AudioProc::~AudioProc(){
+SpatialProc::~SpatialProc(){
     
     //will need to use the destructors for audio pointers
     //or use shared smart pointers for the audio
@@ -49,7 +50,8 @@ AudioProc::~AudioProc(){
     hostFreeStereo();
 }
 
-void AudioProc::process(int x, int y, int z){
+
+void SpatialProc::process(int x, int y, int z){
 
     //means that everything is set (audioleng, smaple rate, buffs) ie fileread check bool
     if (!fileRead){
@@ -100,13 +102,14 @@ void AudioProc::process(int x, int y, int z){
         combine<<<grid_size,block_size>>>(d_monoBuff, d_left_in, d_right_in, m_roomArr[r].totalAbs / m_gain, delay_L_samp, delay_R_samp, m_audioLeng);
     }
 
-    //synchronize?? (wait for gpu calls to stop)
+    //no need to syncronise as memcpy has blocking built in
 
     cudaMemcpy(monoBuff, d_monoBuff, sizeof(short int) * m_audioLeng, cudaMemcpyDeviceToHost);
 
 }
 
-void AudioProc::init(std::string username){
+
+void SpatialProc::init(std::string username){
 
     //move all this somewhere else and just init all this in the constructor then call bake
 
@@ -131,14 +134,14 @@ void AudioProc::init(std::string username){
 }
 
 //calculate distance between two points
-float AudioProc::get_dist(int x, int y, int z, point speaker){
+float SpatialProc::get_dist(int x, int y, int z, point speaker){
 
     float dist = sqrt(pow(x-speaker.x, 2)+pow(y-speaker.y, 2)+pow(z-speaker.z, 2)) / m_resolution;
 
     return dist;
 }
 
-void AudioProc::bake(){
+void SpatialProc::bake(){
 
     //init dimensions and point num
     m_xLength = m_xLength * m_resolution;
@@ -240,108 +243,69 @@ void AudioProc::bake(){
 }
 
 
-//gets and sets
-int AudioProc::getAudioLeng(){
+//XCorr processor
+XCorrProc::XCorrProc(){
 
-    return m_audioLeng;
 }
 
-void AudioProc::setAudioLeng(int val){
+XCorrProc::~XCorrProc(){
 
-    m_audioLeng = val;
+    hostFreeSrc();
+    deviceFreeSrc();
 }
 
-int AudioProc::getSampleRate(){
-    return m_sampleRate;
+void XCorrProc::fillSourceBuffer(int x, int y, int z, std::unique_ptr<SpatialProc> & SProc){
+
+    //delay audio for first sonic impact
+
+    //dist to left
+    float dist_L = SProc->get_dist(x, y, z, SProc->getSpeakerPosition(0));
+    //dist to right
+    float dist_R = SProc->get_dist(x, y, z, SProc->getSpeakerPosition(1));
+
+    //time delays in samples
+    int delay_L_samp = (dist_L/343) * SProc->getSampleRate();
+    int delay_R_samp = (dist_R/343) * SProc->getSampleRate();
+
+    // Executing kernel 
+    int block_size = 256;
+    int grid_size = ((SProc->getAudioLeng() + block_size) / block_size); //add extra 256 to N so that when dividing it will round down to > required threads
+    combine<<<grid_size,block_size>>>(m_d_srcMonoBuff, SProc->d_left_in, SProc->d_right_in, 1, delay_L_samp, delay_R_samp, SProc->getAudioLeng()); //reusing combine func for central virt room with abs=1
+
+    cudaMemcpy(m_srcMonoBuff, m_d_srcMonoBuff, sizeof(short int) * SProc->getAudioLeng(), cudaMemcpyDeviceToHost);
 }
 
-void AudioProc::setSampleRate(int val){
-    m_sampleRate = val;
-}
+void XCorrProc::processXcorr(std::unique_ptr<SpatialProc> & SProc, FILE * outfile){
 
-int AudioProc::getFrameSize(){
-    return m_frameSize;
-}
+    int n = 0; //point in xcorr frame
+    //split monobuff into 3 sec chunks and do cross corr on it vs combined source
+    for (int i = 0; i < SProc->getAudioLeng(); i++){
 
-void AudioProc::setFrameSize(int val){
-    m_frameSize = val;
-}
+        //xcorr happens here
+        numerator += m_srcMonoBuff[i] * SProc->monoBuff[i];
 
-point AudioProc::getSpeakerPosition(char side){
-    if (side == 0){
-        return m_speaker_L;
-    } else {
-        return m_speaker_R;
+        src_sum += pow(m_srcMonoBuff[i], 2);
+        res_sum += pow(SProc->monoBuff[i], 2);
+
+        if (n == SProc->getFrameSize()){
+            divisor = sqrt(src_sum * res_sum);
+
+            xcor = numerator / divisor;
+
+            short int out = xcor * 32767;
+
+            //this will be add value to point array when doing gpu accel
+            fwrite(&out, 1, 2, outfile);
+
+            numerator = 0;
+            divisor = 0;
+            xcor = 0;
+            src_sum = 0;
+            res_sum = 0;
+            n = 0;
+            frameNo++;
+        }
+
+        n++;
     }
-}
-
-dimensions AudioProc::getDimensions(){
-
-    dimensions dims;
-
-    dims.xLength = m_xLength;
-    dims.yLength = m_yLength;
-    dims.zLength = m_zLength;
-
-    return dims;
-}
-
-
-//host and device memory untilities
-
-void AudioProc::copyStereoToDevice(){
-
-    cudaMemcpy(d_left_in, left_in, sizeof(short int) * m_audioLeng, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_right_in, right_in, sizeof(short int) * m_audioLeng, cudaMemcpyHostToDevice);
-}
-
-//stereo buffers dev and host
-void AudioProc::deviceMallocStereo(){
-
-    //need checks audioleng is set
-
-    cudaMalloc((void**)&d_left_in, sizeof(short int) * m_audioLeng);
-    cudaMalloc((void**)&d_right_in, sizeof(short int) * m_audioLeng);
-}
-
-void AudioProc::deviceFreeStereo(){
-    cudaFree(d_left_in);
-    cudaFree(d_right_in);
-}
-
-void AudioProc::hostMallocStereo(){
-
-    //need checks audioleng is set
-
-    left_in = new short int [m_audioLeng];
-    right_in = new short int [m_audioLeng];
-}
-
-void AudioProc::hostFreeStereo(){
-
-    delete [] left_in;
-    delete [] right_in;
-}
-
-//mono buffer dev and host
-void AudioProc::deviceMallocMono(){
-
-    //need checks audioleng is set
-
-    cudaMalloc((void**)&d_monoBuff, sizeof(short int) * m_audioLeng);
-}
-
-void AudioProc::deviceFreeMono(){
-    cudaFree(d_monoBuff);
-}
-
-void AudioProc::hostMallocMono(){
-
-    //need checks audioleng is set
-    
-    monoBuff = new short int [m_audioLeng];
-}
-
-void AudioProc::hostFreeMono(){
-    delete [] monoBuff;
 }
