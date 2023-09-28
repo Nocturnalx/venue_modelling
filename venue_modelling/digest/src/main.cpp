@@ -52,13 +52,11 @@ int main(int argc, char** argv){
             fileHandler->finalise();
 
             //set ticket to ready
-            // ticketReady(username);
+            ticketReady(username);
 
             //audio proc will destroy in/out memory on destructing
         }
         
-        running--; //testing
-
         sleep_for(seconds(5));
     }
 
