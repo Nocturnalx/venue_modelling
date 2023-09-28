@@ -14,7 +14,7 @@ message(STATUS "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
 set( project_sources
    src/main.cpp
    src/AudioProc.cu
-   src/AudioProcParent.cu
+   src/SpatialProcParent.cu
    src/XCorrProcParent.cu
    src/FileHandler.cpp
    src/SQLUtils.cpp
