@@ -76,9 +76,7 @@ Then navigate to the *venue_modelling* folder using `cd venue_modelling`.
 ### node.js and nginx
 1. Install packages.
     ```
-    sudo apt install nginx 
-    sudo apt install nodejs
-    sudo apt install npm
+    sudo apt install nginx nodejs npm
     ```
 
 2. Set up global node packages.
